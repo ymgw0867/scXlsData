@@ -21,6 +21,9 @@ namespace scXlsData
 
             xlsFname = _xlsFName;
             xlsPass = _xlsPass;
+
+            Utility.WindowsMaxSize(this, this.Width, this.Height);
+            Utility.WindowsMinSize(this, this.Width, this.Height);
         }
 
         //DataSet1 dts = new DataSet1();
@@ -1315,6 +1318,16 @@ namespace scXlsData
             }
         }
 
+        ///--------------------------------------------------------------
+        /// <summary>
+        ///     新規登録行数式登録 </summary>
+        /// <param name="sheet">
+        ///     シートオブジェクト</param>
+        /// <param name="row">
+        ///     Rowオブジェクト</param>
+        /// <param name="cLen">
+        ///     </param>
+        ///--------------------------------------------------------------
         private void xlsNewRowStyleSet(IXLWorksheet sheet, IXLRow row, int cLen)
         {
             for (int i = 1; i <= cLen; i++)
@@ -1332,7 +1345,7 @@ namespace scXlsData
 
                 // 表示形式：月日
                 if (i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 10 || i == 11 ||
-                    i == 13 || i == 14 || i == 15 || i == 16 || i == 17 || i == 19 || i == 22 || 
+                    i == 13 || i == 14 || i == 16 || i == 17 || i == 19 || i == 22 || 
                     i == 23 || i == 24 || i == 26 || i == 27 || i == 29 || i == 30 || i == 31 || 
                     i == 36 || i == 37 || i == 38 || i == 41 || i == 42 || i == 43)
                 {
@@ -1380,8 +1393,6 @@ namespace scXlsData
                 {
                     row.Cell(i).Style.Border.RightBorder = XLBorderStyleValues.Medium;
                 }
-
-                // = IF(AND(ISNUMBER(A1), ISNUMBER(B1)), B1 - A1, "")
 
                 // RC依頼からルームチェックまで
                 if (i == 18)
