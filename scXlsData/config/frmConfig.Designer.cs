@@ -37,15 +37,16 @@
             this.txtPassword = new System.Windows.Forms.TextBox();
             this.txtFilePath = new System.Windows.Forms.TextBox();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label3.Location = new System.Drawing.Point(23, 25);
+            this.label3.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.label3.Location = new System.Drawing.Point(20, 25);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(118, 12);
+            this.label3.Size = new System.Drawing.Size(130, 13);
             this.label3.TabIndex = 4;
             this.label3.Text = "解約管理表ファイルパス";
             // 
@@ -64,11 +65,11 @@
             // button2
             // 
             this.button2.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.button2.Location = new System.Drawing.Point(361, 132);
+            this.button2.Location = new System.Drawing.Point(361, 161);
             this.button2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(84, 27);
-            this.button2.TabIndex = 3;
+            this.button2.TabIndex = 4;
             this.button2.Text = "登録(&D)";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
@@ -76,11 +77,11 @@
             // button3
             // 
             this.button3.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.button3.Location = new System.Drawing.Point(451, 132);
+            this.button3.Location = new System.Drawing.Point(451, 161);
             this.button3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(84, 27);
-            this.button3.TabIndex = 4;
+            this.button3.TabIndex = 5;
             this.button3.Text = "終了(&E)";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
@@ -88,10 +89,10 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label6.Location = new System.Drawing.Point(23, 90);
+            this.label6.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.label6.Location = new System.Drawing.Point(20, 79);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(169, 12);
+            this.label6.Size = new System.Drawing.Size(186, 13);
             this.label6.TabIndex = 11;
             this.label6.Text = "エクセルファイル読み込みパスワード";
             // 
@@ -99,11 +100,11 @@
             // 
             this.txtPassword.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.txtPassword.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.txtPassword.Location = new System.Drawing.Point(198, 85);
+            this.txtPassword.Location = new System.Drawing.Point(215, 74);
             this.txtPassword.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtPassword.MaxLength = 30;
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(275, 20);
+            this.txtPassword.Size = new System.Drawing.Size(258, 20);
             this.txtPassword.TabIndex = 2;
             // 
             // txtFilePath
@@ -120,11 +121,24 @@
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkBox1.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.checkBox1.Location = new System.Drawing.Point(20, 113);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(381, 17);
+            this.checkBox1.TabIndex = 3;
+            this.checkBox1.Text = "解約物件追加時にエクセルシートに「条件付き書式設定」を追加する";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
             // frmConfig
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(552, 170);
+            this.ClientSize = new System.Drawing.Size(552, 199);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.txtFilePath);
             this.Controls.Add(this.txtPassword);
             this.Controls.Add(this.label6);
@@ -154,5 +168,6 @@
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.TextBox txtFilePath;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }

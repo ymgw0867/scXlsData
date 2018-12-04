@@ -21,6 +21,7 @@ namespace scXlsData
 
         string xlsFname = string.Empty;
         string xlsPass = string.Empty;
+        int xlsJyokenFormat = 0;
 
         private void button4_Click(object sender, EventArgs e)
         {
@@ -60,7 +61,7 @@ namespace scXlsData
             }
 
             Hide();
-            Form1 frm = new Form1(xlsFname, xlsPass);
+            Form1 frm = new Form1(xlsFname, xlsPass, xlsJyokenFormat);
             frm.ShowDialog();
             Show();
         }
@@ -123,6 +124,15 @@ namespace scXlsData
             else
             {
                 xlsPass = s.sheetPassword;
+            }
+
+            if (s.Is新規条件付き書式設定Null())
+            {
+                xlsJyokenFormat = 0;
+            }
+            else
+            {
+                xlsJyokenFormat = s.新規条件付き書式設定;
             }
         }
 

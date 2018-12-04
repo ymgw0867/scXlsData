@@ -285,6 +285,8 @@ namespace scXlsData {
             
             private global::System.Data.DataColumn columnsheetPassword;
             
+            private global::System.Data.DataColumn column新規条件付き書式設定;
+            
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public 環境設定DataTable() {
@@ -344,6 +346,14 @@ namespace scXlsData {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public global::System.Data.DataColumn 新規条件付き書式設定Column {
+                get {
+                    return this.column新規条件付き書式設定;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -379,12 +389,13 @@ namespace scXlsData {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
-            public 環境設定Row Add環境設定Row(int ID, string targetXlsFile, string sheetPassword) {
+            public 環境設定Row Add環境設定Row(int ID, string targetXlsFile, string sheetPassword, int 新規条件付き書式設定) {
                 環境設定Row row環境設定Row = ((環境設定Row)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         ID,
                         targetXlsFile,
-                        sheetPassword};
+                        sheetPassword,
+                        新規条件付き書式設定};
                 row環境設定Row.ItemArray = columnValuesArray;
                 this.Rows.Add(row環境設定Row);
                 return row環境設定Row;
@@ -417,6 +428,7 @@ namespace scXlsData {
                 this.columnID = base.Columns["ID"];
                 this.columntargetXlsFile = base.Columns["targetXlsFile"];
                 this.columnsheetPassword = base.Columns["sheetPassword"];
+                this.column新規条件付き書式設定 = base.Columns["新規条件付き書式設定"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -428,6 +440,8 @@ namespace scXlsData {
                 base.Columns.Add(this.columntargetXlsFile);
                 this.columnsheetPassword = new global::System.Data.DataColumn("sheetPassword", typeof(string), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnsheetPassword);
+                this.column新規条件付き書式設定 = new global::System.Data.DataColumn("新規条件付き書式設定", typeof(int), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.column新規条件付き書式設定);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnID}, true));
                 this.columnID.AllowDBNull = false;
@@ -619,6 +633,22 @@ namespace scXlsData {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public int 新規条件付き書式設定 {
+                get {
+                    try {
+                        return ((int)(this[this.table環境設定.新規条件付き書式設定Column]));
+                    }
+                    catch (global::System.InvalidCastException e) {
+                        throw new global::System.Data.StrongTypingException("テーブル \'環境設定\' にある列 \'新規条件付き書式設定\' の値は DBNull です。", e);
+                    }
+                }
+                set {
+                    this[this.table環境設定.新規条件付き書式設定Column] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public bool IstargetXlsFileNull() {
                 return this.IsNull(this.table環境設定.targetXlsFileColumn);
             }
@@ -639,6 +669,18 @@ namespace scXlsData {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
             public void SetsheetPasswordNull() {
                 this[this.table環境設定.sheetPasswordColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public bool Is新規条件付き書式設定Null() {
+                return this.IsNull(this.table環境設定.新規条件付き書式設定Column);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
+            public void Set新規条件付き書式設定Null() {
+                this[this.table環境設定.新規条件付き書式設定Column] = global::System.Convert.DBNull;
             }
         }
         
@@ -804,39 +846,45 @@ namespace scXlsData.DataSet1TableAdapters {
             tableMapping.ColumnMappings.Add("ID", "ID");
             tableMapping.ColumnMappings.Add("targetXlsFile", "targetXlsFile");
             tableMapping.ColumnMappings.Add("sheetPassword", "sheetPassword");
+            tableMapping.ColumnMappings.Add("新規条件付き書式設定", "新規条件付き書式設定");
             this._adapter.TableMappings.Add(tableMapping);
             this._adapter.DeleteCommand = new global::System.Data.OleDb.OleDbCommand();
             this._adapter.DeleteCommand.Connection = this.Connection;
             this._adapter.DeleteCommand.CommandText = "DELETE FROM `環境設定` WHERE ((`ID` = ?) AND ((? = 1 AND `targetXlsFile` IS NULL) OR " +
                 "(`targetXlsFile` = ?)) AND ((? = 1 AND `sheetPassword` IS NULL) OR (`sheetPasswo" +
-                "rd` = ?)))";
+                "rd` = ?)) AND ((? = 1 AND `新規条件付き書式設定` IS NULL) OR (`新規条件付き書式設定` = ?)))";
             this._adapter.DeleteCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_ID", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "ID", global::System.Data.DataRowVersion.Original, false, null));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_targetXlsFile", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Original, true, null));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_targetXlsFile", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Original, false, null));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_sheetPassword", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Original, true, null));
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_sheetPassword", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Original, false, null));
+            this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Original, true, null));
+            this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Original, false, null));
             this._adapter.InsertCommand = new global::System.Data.OleDb.OleDbCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
-            this._adapter.InsertCommand.CommandText = "INSERT INTO `環境設定` (`ID`, `targetXlsFile`, `sheetPassword`) VALUES (?, ?, ?)";
+            this._adapter.InsertCommand.CommandText = "INSERT INTO `環境設定` (`ID`, `targetXlsFile`, `sheetPassword`, `新規条件付き書式設定`) VALUES " +
+                "(?, ?, ?, ?)";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("ID", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "ID", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("targetXlsFile", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("sheetPassword", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Current, false, null));
+            this._adapter.InsertCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.UpdateCommand = new global::System.Data.OleDb.OleDbCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
-            this._adapter.UpdateCommand.CommandText = "UPDATE `環境設定` SET `ID` = ?, `targetXlsFile` = ?, `sheetPassword` = ? WHERE ((`ID`" +
-                " = ?) AND ((? = 1 AND `targetXlsFile` IS NULL) OR (`targetXlsFile` = ?)) AND ((?" +
-                " = 1 AND `sheetPassword` IS NULL) OR (`sheetPassword` = ?)))";
+            this._adapter.UpdateCommand.CommandText = @"UPDATE `環境設定` SET `ID` = ?, `targetXlsFile` = ?, `sheetPassword` = ?, `新規条件付き書式設定` = ? WHERE ((`ID` = ?) AND ((? = 1 AND `targetXlsFile` IS NULL) OR (`targetXlsFile` = ?)) AND ((? = 1 AND `sheetPassword` IS NULL) OR (`sheetPassword` = ?)) AND ((? = 1 AND `新規条件付き書式設定` IS NULL) OR (`新規条件付き書式設定` = ?)))";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("ID", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "ID", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("targetXlsFile", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("sheetPassword", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Current, false, null));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Current, false, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_ID", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "ID", global::System.Data.DataRowVersion.Original, false, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_targetXlsFile", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Original, true, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_targetXlsFile", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Original, false, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_sheetPassword", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Original, true, null));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_sheetPassword", global::System.Data.OleDb.OleDbType.VarWChar, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Original, false, null));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("IsNull_新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Original, true, null));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Original, false, null));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -852,18 +900,20 @@ namespace scXlsData.DataSet1TableAdapters {
             this._commandCollection = new global::System.Data.OleDb.OleDbCommand[3];
             this._commandCollection[0] = new global::System.Data.OleDb.OleDbCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT ID, targetXlsFile, sheetPassword FROM 環境設定";
+            this._commandCollection[0].CommandText = "SELECT ID, targetXlsFile, sheetPassword, 新規条件付き書式設定 FROM 環境設定";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1] = new global::System.Data.OleDb.OleDbCommand();
             this._commandCollection[1].Connection = this.Connection;
-            this._commandCollection[1].CommandText = "SELECT ID, targetXlsFile, sheetPassword FROM 環境設定 where ID = 1";
+            this._commandCollection[1].CommandText = "SELECT ID, sheetPassword, targetXlsFile, 新規条件付き書式設定 FROM 環境設定 WHERE (ID = 1)";
             this._commandCollection[1].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[2] = new global::System.Data.OleDb.OleDbCommand();
             this._commandCollection[2].Connection = this.Connection;
-            this._commandCollection[2].CommandText = "UPDATE 環境設定 SET targetXlsFile = ?, sheetPassword = ? WHERE (ID = ?) ";
+            this._commandCollection[2].CommandText = "UPDATE 環境設定 SET targetXlsFile = ?, sheetPassword = ?, 新規条件付き書式設定 = ? WHERE (ID = " +
+                "?) ";
             this._commandCollection[2].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[2].Parameters.Add(new global::System.Data.OleDb.OleDbParameter("targetXlsFile", global::System.Data.OleDb.OleDbType.WChar, 255, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "targetXlsFile", global::System.Data.DataRowVersion.Current, false, null));
             this._commandCollection[2].Parameters.Add(new global::System.Data.OleDb.OleDbParameter("sheetPassword", global::System.Data.OleDb.OleDbType.WChar, 255, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "sheetPassword", global::System.Data.DataRowVersion.Current, false, null));
+            this._commandCollection[2].Parameters.Add(new global::System.Data.OleDb.OleDbParameter("新規条件付き書式設定", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "新規条件付き書式設定", global::System.Data.DataRowVersion.Current, false, null));
             this._commandCollection[2].Parameters.Add(new global::System.Data.OleDb.OleDbParameter("Original_ID", global::System.Data.OleDb.OleDbType.Integer, 0, global::System.Data.ParameterDirection.Input, ((byte)(0)), ((byte)(0)), "ID", global::System.Data.DataRowVersion.Original, false, null));
         }
         
@@ -948,7 +998,7 @@ namespace scXlsData.DataSet1TableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Delete, true)]
-        public virtual int Delete(global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword) {
+        public virtual int Delete(global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword, global::System.Nullable<int> Original_新規条件付き書式設定) {
             if ((Original_ID.HasValue == true)) {
                 this.Adapter.DeleteCommand.Parameters[0].Value = ((int)(Original_ID.Value));
             }
@@ -971,6 +1021,14 @@ namespace scXlsData.DataSet1TableAdapters {
                 this.Adapter.DeleteCommand.Parameters[3].Value = ((object)(0));
                 this.Adapter.DeleteCommand.Parameters[4].Value = ((string)(Original_sheetPassword));
             }
+            if ((Original_新規条件付き書式設定.HasValue == true)) {
+                this.Adapter.DeleteCommand.Parameters[5].Value = ((object)(0));
+                this.Adapter.DeleteCommand.Parameters[6].Value = ((int)(Original_新規条件付き書式設定.Value));
+            }
+            else {
+                this.Adapter.DeleteCommand.Parameters[5].Value = ((object)(1));
+                this.Adapter.DeleteCommand.Parameters[6].Value = global::System.DBNull.Value;
+            }
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.DeleteCommand.Connection.State;
             if (((this.Adapter.DeleteCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -991,7 +1049,7 @@ namespace scXlsData.DataSet1TableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Insert, true)]
-        public virtual int Insert(global::System.Nullable<int> ID, string targetXlsFile, string sheetPassword) {
+        public virtual int Insert(global::System.Nullable<int> ID, string targetXlsFile, string sheetPassword, global::System.Nullable<int> 新規条件付き書式設定) {
             if ((ID.HasValue == true)) {
                 this.Adapter.InsertCommand.Parameters[0].Value = ((int)(ID.Value));
             }
@@ -1009,6 +1067,12 @@ namespace scXlsData.DataSet1TableAdapters {
             }
             else {
                 this.Adapter.InsertCommand.Parameters[2].Value = ((string)(sheetPassword));
+            }
+            if ((新規条件付き書式設定.HasValue == true)) {
+                this.Adapter.InsertCommand.Parameters[3].Value = ((int)(新規条件付き書式設定.Value));
+            }
+            else {
+                this.Adapter.InsertCommand.Parameters[3].Value = global::System.DBNull.Value;
             }
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.InsertCommand.Connection.State;
             if (((this.Adapter.InsertCommand.Connection.State & global::System.Data.ConnectionState.Open) 
@@ -1030,7 +1094,7 @@ namespace scXlsData.DataSet1TableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(global::System.Nullable<int> ID, string targetXlsFile, string sheetPassword, global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword) {
+        public virtual int Update(global::System.Nullable<int> ID, string targetXlsFile, string sheetPassword, global::System.Nullable<int> 新規条件付き書式設定, global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword, global::System.Nullable<int> Original_新規条件付き書式設定) {
             if ((ID.HasValue == true)) {
                 this.Adapter.UpdateCommand.Parameters[0].Value = ((int)(ID.Value));
             }
@@ -1049,27 +1113,41 @@ namespace scXlsData.DataSet1TableAdapters {
             else {
                 this.Adapter.UpdateCommand.Parameters[2].Value = ((string)(sheetPassword));
             }
-            if ((Original_ID.HasValue == true)) {
-                this.Adapter.UpdateCommand.Parameters[3].Value = ((int)(Original_ID.Value));
+            if ((新規条件付き書式設定.HasValue == true)) {
+                this.Adapter.UpdateCommand.Parameters[3].Value = ((int)(新規条件付き書式設定.Value));
             }
             else {
                 this.Adapter.UpdateCommand.Parameters[3].Value = global::System.DBNull.Value;
             }
-            if ((Original_targetXlsFile == null)) {
-                this.Adapter.UpdateCommand.Parameters[4].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[5].Value = global::System.DBNull.Value;
+            if ((Original_ID.HasValue == true)) {
+                this.Adapter.UpdateCommand.Parameters[4].Value = ((int)(Original_ID.Value));
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[4].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[5].Value = ((string)(Original_targetXlsFile));
+                this.Adapter.UpdateCommand.Parameters[4].Value = global::System.DBNull.Value;
+            }
+            if ((Original_targetXlsFile == null)) {
+                this.Adapter.UpdateCommand.Parameters[5].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[6].Value = global::System.DBNull.Value;
+            }
+            else {
+                this.Adapter.UpdateCommand.Parameters[5].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[6].Value = ((string)(Original_targetXlsFile));
             }
             if ((Original_sheetPassword == null)) {
-                this.Adapter.UpdateCommand.Parameters[6].Value = ((object)(1));
-                this.Adapter.UpdateCommand.Parameters[7].Value = global::System.DBNull.Value;
+                this.Adapter.UpdateCommand.Parameters[7].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[8].Value = global::System.DBNull.Value;
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[6].Value = ((object)(0));
-                this.Adapter.UpdateCommand.Parameters[7].Value = ((string)(Original_sheetPassword));
+                this.Adapter.UpdateCommand.Parameters[7].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[8].Value = ((string)(Original_sheetPassword));
+            }
+            if ((Original_新規条件付き書式設定.HasValue == true)) {
+                this.Adapter.UpdateCommand.Parameters[9].Value = ((object)(0));
+                this.Adapter.UpdateCommand.Parameters[10].Value = ((int)(Original_新規条件付き書式設定.Value));
+            }
+            else {
+                this.Adapter.UpdateCommand.Parameters[9].Value = ((object)(1));
+                this.Adapter.UpdateCommand.Parameters[10].Value = global::System.DBNull.Value;
             }
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.UpdateCommand.Connection.State;
             if (((this.Adapter.UpdateCommand.Connection.State & global::System.Data.ConnectionState.Open) 
@@ -1091,15 +1169,15 @@ namespace scXlsData.DataSet1TableAdapters {
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
-        public virtual int Update(string targetXlsFile, string sheetPassword, global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword) {
-            return this.Update(Original_ID, targetXlsFile, sheetPassword, Original_ID, Original_targetXlsFile, Original_sheetPassword);
+        public virtual int Update(string targetXlsFile, string sheetPassword, global::System.Nullable<int> 新規条件付き書式設定, global::System.Nullable<int> Original_ID, string Original_targetXlsFile, string Original_sheetPassword, global::System.Nullable<int> Original_新規条件付き書式設定) {
+            return this.Update(Original_ID, targetXlsFile, sheetPassword, 新規条件付き書式設定, Original_ID, Original_targetXlsFile, Original_sheetPassword, Original_新規条件付き書式設定);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "15.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, false)]
-        public virtual int UpdateQuery(string targetXlsFile, string sheetPassword, global::System.Nullable<int> Original_ID) {
+        public virtual int UpdateQuery(string targetXlsFile, string sheetPassword, global::System.Nullable<int> 新規条件付き書式設定, global::System.Nullable<int> Original_ID) {
             global::System.Data.OleDb.OleDbCommand command = this.CommandCollection[2];
             if ((targetXlsFile == null)) {
                 command.Parameters[0].Value = global::System.DBNull.Value;
@@ -1113,11 +1191,17 @@ namespace scXlsData.DataSet1TableAdapters {
             else {
                 command.Parameters[1].Value = ((string)(sheetPassword));
             }
-            if ((Original_ID.HasValue == true)) {
-                command.Parameters[2].Value = ((int)(Original_ID.Value));
+            if ((新規条件付き書式設定.HasValue == true)) {
+                command.Parameters[2].Value = ((int)(新規条件付き書式設定.Value));
             }
             else {
                 command.Parameters[2].Value = global::System.DBNull.Value;
+            }
+            if ((Original_ID.HasValue == true)) {
+                command.Parameters[3].Value = ((int)(Original_ID.Value));
+            }
+            else {
+                command.Parameters[3].Value = global::System.DBNull.Value;
             }
             global::System.Data.ConnectionState previousConnectionState = command.Connection.State;
             if (((command.Connection.State & global::System.Data.ConnectionState.Open) 

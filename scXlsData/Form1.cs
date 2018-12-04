@@ -15,12 +15,13 @@ namespace scXlsData
 {
     public partial class Form1 : Form
     {
-        public Form1(string _xlsFName, string _xlsPass)
+        public Form1(string _xlsFName, string _xlsPass, int _xlsJyokenFormat)
         {
             InitializeComponent();
 
             xlsFname = _xlsFName;
             xlsPass = _xlsPass;
+            xlsJyokenFormat = _xlsJyokenFormat;
 
             Utility.WindowsMaxSize(this, this.Width, this.Height);
             Utility.WindowsMinSize(this, this.Width, this.Height);
@@ -32,6 +33,7 @@ namespace scXlsData
         string tFile = string.Empty;
         string xlsFname = string.Empty;
         string xlsPass = string.Empty;
+        int xlsJyokenFormat = 0;
 
         string upFlg = "1";     // 更新フラグ
         string addFlg = "2";    // 追加フラグ
@@ -286,34 +288,7 @@ namespace scXlsData
             txtsBuName.Text = string.Empty;
             button5.Enabled = false;
         }
-
-
-        //DrawItemイベントハンドラ
-        //項目を描画する
-        private void ComboBox1_DrawItem(object sender, System.Windows.Forms.DrawItemEventArgs e)
-        {
-            //背景を描画する
-            //項目が選択されている時は強調表示される
-            e.DrawBackground();
-
-            ComboBox cmb = (ComboBox)sender;
-
-            //項目に表示する文字列
-            string txt = e.Index > -1 ?
-                cmb.Items[e.Index].ToString() : cmb.Text;
-
-            //使用するブラシ
-            Brush b = new SolidBrush(e.ForeColor);
-
-            //文字列を描画する
-            float ym = (e.Bounds.Height - e.Graphics.MeasureString(txt, cmb.Font).Height) / 2;
-            e.Graphics.DrawString(txt, cmb.Font, b, e.Bounds.X, e.Bounds.Y + ym);
-            b.Dispose();
-
-            //フォーカスを示す四角形を描画
-            e.DrawFocusRectangle();
-        }
-
+        
         private void Form1_Shown(object sender, EventArgs e)
         {
             dataGridView1.CurrentCell = null;
@@ -1080,6 +1055,9 @@ namespace scXlsData
                 // 新規登録
                 addDataGrid(dataGridView1);
 
+                dataGridView1.CurrentCell = dataGridView1[1, dataGridView1.RowCount - 1];
+                dataGridView1.CurrentCell = null;
+
                 // 画面初期化
                 dispInitial();
             }
@@ -1224,6 +1202,18 @@ namespace scXlsData
             dg[col_upFlg, i].Value = uFlg;
         }
 
+        ///---------------------------------------------------------------------
+        /// <summary>
+        ///     エクセルシート更新 </summary>
+        /// <param name="dg">
+        ///     データグリッドビューオブジェクト</param>
+        /// <param name="sFile">
+        ///     対象エクセルファイル</param>
+        /// <param name="rPass">
+        ///     読み込みパスワード</param>
+        /// <param name="wPass">
+        ///     書き込みパスワード</param>
+        ///---------------------------------------------------------------------
         private void dataUpdate(DataGridView dg, string sFile, string rPass, string wPass)
         {
             bool uStatus = false;
@@ -1231,7 +1221,7 @@ namespace scXlsData
             int uCnt = 0;
             Cursor = Cursors.WaitCursor;
 
-            string sPath = System.IO.Path.GetDirectoryName(xlsFname);
+            string sPath = System.IO.Path.GetDirectoryName(sFile);
 
             //LOCKファイル作成
             Utility.makeLockFile(sPath, System.Net.Dns.GetHostName());
@@ -1239,6 +1229,7 @@ namespace scXlsData
             // 対象エクセルファイルのパスワードを解除する
             impXlsSheet(sFile, rPass, wPass);
 
+            // ブック取得
             using (var bk = new XLWorkbook(sFile, XLEventTracking.Disabled))
             {
                 var sheet1 = bk.Worksheet(Properties.Settings.Default.xlsSheetName);
@@ -1401,30 +1392,33 @@ namespace scXlsData
                     string formula = "=IF(AND(ISNUMBER(Q" + row.RowNumber() + "), ISNUMBER(P" + row.RowNumber() + ")), Q" + row.RowNumber() + " - P" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
-                    // 条件付き書式を追加
-                    var cell1 = sheet.Cell("R6");
-                    var cell2 = row.Cell(i);
-                    IXLRange xLRange = sheet.Range(cell1, cell2);
+                    if (xlsJyokenFormat == 1)
+                    {
+                        // 条件付き書式を追加
+                        var cell1 = sheet.Cell("R6");
+                        var cell2 = row.Cell(i);
+                        IXLRange xLRange = sheet.Range(cell1, cell2);
 
-                    // 空白セル
-                    xLRange.AddConditionalFormat()
-                        .WhenIsBlank()
-                        .Fill.SetBackgroundColor(XLColor.White);
+                        // 空白セル
+                        xLRange.AddConditionalFormat()
+                            .WhenIsBlank()
+                            .Fill.SetBackgroundColor(XLColor.White);
 
-                    // ０～２日　空色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(0, 2)
-                        .Fill.SetBackgroundColor(XLColor.SkyBlue);
+                        // ０～２日　空色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(0, 2)
+                            .Fill.SetBackgroundColor(XLColor.SkyBlue);
 
-                    // ３～５日　黄色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(3, 5)
-                        .Fill.SetBackgroundColor(XLColor.Yellow);
+                        // ３～５日　黄色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(3, 5)
+                            .Fill.SetBackgroundColor(XLColor.Yellow);
 
-                    // ６日～　赤色
-                    xLRange.AddConditionalFormat()
-                        .WhenEqualOrGreaterThan(6)
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        // ６日～　赤色
+                        xLRange.AddConditionalFormat()
+                            .WhenEqualOrGreaterThan(6)
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
                 }
 
                 // 見積書送付から本日まで
@@ -1434,30 +1428,33 @@ namespace scXlsData
                     string formula = "=IF(ISNUMBER(AA" + row.RowNumber() + "), TODAY()- AA" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
-                    // 条件付き書式を追加
-                    var cell1 = sheet.Cell("AB6");
-                    var cell2 = row.Cell(i);
-                    IXLRange xLRange = sheet.Range(cell1, cell2);
+                    if (xlsJyokenFormat == 1)
+                    {
+                        // 条件付き書式を追加
+                        var cell1 = sheet.Cell("AB6");
+                        var cell2 = row.Cell(i);
+                        IXLRange xLRange = sheet.Range(cell1, cell2);
 
-                    // 空白セル
-                    xLRange.AddConditionalFormat()
-                        .WhenIsBlank()
-                        .Fill.SetBackgroundColor(XLColor.White);
+                        // 空白セル
+                        xLRange.AddConditionalFormat()
+                            .WhenIsBlank()
+                            .Fill.SetBackgroundColor(XLColor.White);
 
-                    // ０～14日　空色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(0, 14)
-                        .Fill.SetBackgroundColor(XLColor.SkyBlue);
+                        // ０～14日　空色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(0, 14)
+                            .Fill.SetBackgroundColor(XLColor.SkyBlue);
 
-                    // 15～30日　黄色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(15, 30)
-                        .Fill.SetBackgroundColor(XLColor.Yellow);
+                        // 15～30日　黄色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(15, 30)
+                            .Fill.SetBackgroundColor(XLColor.Yellow);
 
-                    // 31日～　赤色
-                    xLRange.AddConditionalFormat()
-                        .WhenEqualOrGreaterThan(31)
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        // 31日～　赤色
+                        xLRange.AddConditionalFormat()
+                            .WhenEqualOrGreaterThan(31)
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
                 }
 
                 // ルームチェックから発注までの日数計算：数式
@@ -1466,30 +1463,34 @@ namespace scXlsData
                     string formula = "=IF(AND(ISNUMBER(AE" + row.RowNumber() + "), ISNUMBER(Q" + row.RowNumber() + ")), AE" + row.RowNumber() + " - Q" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
-                    // 条件付き書式を追加
-                    var cell1 = sheet.Cell("AF6");
-                    var cell2 = row.Cell(i);
-                    IXLRange xLRange = sheet.Range(cell1, cell2);
+                    if (xlsJyokenFormat == 1)
+                    {
 
-                    // 空白セル
-                    xLRange.AddConditionalFormat()
-                        .WhenIsBlank()
-                        .Fill.SetBackgroundColor(XLColor.White);
+                        // 条件付き書式を追加
+                        var cell1 = sheet.Cell("AF6");
+                        var cell2 = row.Cell(i);
+                        IXLRange xLRange = sheet.Range(cell1, cell2);
 
-                    // ０～5日　空色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(0, 5)
-                        .Fill.SetBackgroundColor(XLColor.SkyBlue);
+                        // 空白セル
+                        xLRange.AddConditionalFormat()
+                            .WhenIsBlank()
+                            .Fill.SetBackgroundColor(XLColor.White);
 
-                    // 6～9日　黄色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(6, 9)
-                        .Fill.SetBackgroundColor(XLColor.Yellow);
+                        // ０～5日　空色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(0, 5)
+                            .Fill.SetBackgroundColor(XLColor.SkyBlue);
 
-                    // 10日～　赤色
-                    xLRange.AddConditionalFormat()
-                        .WhenEqualOrGreaterThan(10)
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        // 6～9日　黄色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(6, 9)
+                            .Fill.SetBackgroundColor(XLColor.Yellow);
+
+                        // 10日～　赤色
+                        xLRange.AddConditionalFormat()
+                            .WhenEqualOrGreaterThan(10)
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
                 }
 
                 // 発注から工事終了までの日数計算：数式
@@ -1498,30 +1499,33 @@ namespace scXlsData
                     string formula = "=IF(AND(ISNUMBER(AL" + row.RowNumber() + "), ISNUMBER(AE" + row.RowNumber() + ")), AL" + row.RowNumber() + " - AE" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
-                    // 条件付き書式を追加
-                    var cell1 = sheet.Cell("AM6");
-                    var cell2 = row.Cell(i);
-                    IXLRange xLRange = sheet.Range(cell1, cell2);
+                    if (xlsJyokenFormat == 1)
+                    {
+                        // 条件付き書式を追加
+                        var cell1 = sheet.Cell("AM6");
+                        var cell2 = row.Cell(i);
+                        IXLRange xLRange = sheet.Range(cell1, cell2);
 
-                    // 空白セル
-                    xLRange.AddConditionalFormat()
-                        .WhenIsBlank()
-                        .Fill.SetBackgroundColor(XLColor.White);
+                        // 空白セル
+                        xLRange.AddConditionalFormat()
+                            .WhenIsBlank()
+                            .Fill.SetBackgroundColor(XLColor.White);
 
-                    // ０～9日　空色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(0, 9)
-                        .Fill.SetBackgroundColor(XLColor.SkyBlue);
+                        // ０～9日　空色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(0, 9)
+                            .Fill.SetBackgroundColor(XLColor.SkyBlue);
 
-                    // 10～14日　黄色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(10, 14)
-                        .Fill.SetBackgroundColor(XLColor.Yellow);
+                        // 10～14日　黄色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(10, 14)
+                            .Fill.SetBackgroundColor(XLColor.Yellow);
 
-                    // 15日～　赤色
-                    xLRange.AddConditionalFormat()
-                        .WhenEqualOrGreaterThan(15)
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        // 15日～　赤色
+                        xLRange.AddConditionalFormat()
+                            .WhenEqualOrGreaterThan(15)
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
                 }
 
                 // RC依頼から工事終了までの日数計算：数式
@@ -1530,30 +1534,33 @@ namespace scXlsData
                     string formula = "=IF(AND(ISNUMBER(AL" + row.RowNumber() + "), ISNUMBER(P" + row.RowNumber() + ")), AL" + row.RowNumber() + " - P" + row.RowNumber() + " + 1, " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
-                    // 条件付き書式を追加
-                    var cell1 = sheet.Cell("AN6");
-                    var cell2 = row.Cell(i);
-                    IXLRange xLRange = sheet.Range(cell1, cell2);
+                    if (xlsJyokenFormat == 1)
+                    {
+                        // 条件付き書式を追加
+                        var cell1 = sheet.Cell("AN6");
+                        var cell2 = row.Cell(i);
+                        IXLRange xLRange = sheet.Range(cell1, cell2);
 
-                    // 空白セル
-                    xLRange.AddConditionalFormat()
-                        .WhenIsBlank()
-                        .Fill.SetBackgroundColor(XLColor.White);
+                        // 空白セル
+                        xLRange.AddConditionalFormat()
+                            .WhenIsBlank()
+                            .Fill.SetBackgroundColor(XLColor.White);
 
-                    // ０～14日　空色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(0, 14)
-                        .Fill.SetBackgroundColor(XLColor.SkyBlue);
+                        // ０～14日　空色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(0, 14)
+                            .Fill.SetBackgroundColor(XLColor.SkyBlue);
 
-                    // 15～21日　黄色
-                    xLRange.AddConditionalFormat()
-                        .WhenBetween(15, 21)
-                        .Fill.SetBackgroundColor(XLColor.Yellow);
+                        // 15～21日　黄色
+                        xLRange.AddConditionalFormat()
+                            .WhenBetween(15, 21)
+                            .Fill.SetBackgroundColor(XLColor.Yellow);
 
-                    // 22日～　赤色
-                    xLRange.AddConditionalFormat()
-                        .WhenEqualOrGreaterThan(22)
-                        .Fill.SetBackgroundColor(XLColor.Red);
+                        // 22日～　赤色
+                        xLRange.AddConditionalFormat()
+                            .WhenEqualOrGreaterThan(22)
+                            .Fill.SetBackgroundColor(XLColor.Red);
+                    }
                 }
             }
         }

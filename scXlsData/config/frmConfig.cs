@@ -49,11 +49,28 @@ namespace scXlsData.config
                 {
                     txtPassword.Text = s.sheetPassword;
                 }
+
+                if (s.Is新規条件付き書式設定Null())
+                {
+                    checkBox1.Checked = false;
+                }
+                else
+                {
+                    if (s.新規条件付き書式設定 == 0)
+                    {
+                        checkBox1.Checked = false;
+                    }
+                    else
+                    {
+                        checkBox1.Checked = true;
+                    }
+                }
             }
             else
             {
                 txtFilePath.Text = string.Empty;
                 txtPassword.Text = string.Empty;
+                checkBox1.Checked = false;
             }
         }
 
@@ -111,7 +128,18 @@ namespace scXlsData.config
                 return;
             }
 
-            adp.UpdateQuery(txtFilePath.Text, txtPassword.Text, 1);
+            int chk = 0;
+
+            if (checkBox1.Checked)
+            {
+                chk = 1;
+            }
+            else
+            {
+                chk = 0;
+            }
+
+            adp.UpdateQuery(txtFilePath.Text, txtPassword.Text, chk, 1);
  
             // 終了
             this.Close();
