@@ -112,6 +112,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="DataSet1.xsc">
       <DependentUpon>DataSet1.xsd</DependentUpon>
@@ -171,6 +172,9 @@
     <Content Include="Excel2_35735.ico" />
     <Content Include="Excel_2013_23480.ico" />
     <Content Include="Microsoft_Excel_22890.ico" />
+    <None Include="Resources\496-24.gif" />
+    <None Include="Resources\CCC-05.gif" />
+    <None Include="Resources\loading-l-5.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

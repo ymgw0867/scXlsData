@@ -118,13 +118,36 @@ namespace scXlsData
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (uCnt > 0)
-            {
-                if (MessageBox.Show(uCnt + "件の更新を保存して終了しますか？", "更新確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
-                }
-            }
+            //if (uCnt > 0)
+            //{
+            //    if (MessageBox.Show(uCnt + "件の更新を保存して終了しますか？", "更新確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            //    {
+            //        string sPath = System.IO.Path.GetDirectoryName(xlsFname);
+
+            //        // 他のPCで処理中の場合、続行不可
+            //        //if (Utility.existsLockFile(sPath))
+            //        //{
+            //        //    MessageBox.Show("他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。再度実行してください。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            //        //    return;
+            //        //}
+
+            //        // 他のPCで処理中の場合、続行不可
+            //        while (Utility.existsLockFile(sPath))
+            //        {
+            //            Cursor = Cursors.WaitCursor;
+            //            pictureBox1.Visible = true;
+            //            lblMsg.Text = "他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。少々おまちください...";
+            //            System.Threading.Thread.Sleep(100);
+            //            Application.DoEvents();
+            //        }
+
+            //        Cursor = Cursors.Default;
+            //        pictureBox1.Visible = false;
+            //        lblMsg.Text = "";
+
+            //        dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
+            //    }
+            //}
 
             // フォームを閉じる
             Close();
@@ -132,8 +155,39 @@ namespace scXlsData
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // 後片付け
-            Dispose();
+            if (uCnt > 0)
+            {
+                if (MessageBox.Show(uCnt + "件の更新を保存して終了しますか？", "更新確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    string sPath = System.IO.Path.GetDirectoryName(xlsFname);
+
+                    // 他のPCで処理中の場合、続行不可
+                    //if (Utility.existsLockFile(sPath))
+                    //{
+                    //    MessageBox.Show("他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。再度実行してください。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                    //    return;
+                    //}
+
+                    // 他のPCで処理中の場合、続行不可
+                    while (Utility.existsLockFile(sPath))
+                    {
+                        Cursor = Cursors.WaitCursor;
+                        pictureBox1.Visible = true;
+                        lblMsg.Text = "他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。少々おまちください...";
+                        System.Threading.Thread.Sleep(100);
+                        Application.DoEvents();
+                    }
+
+                    Cursor = Cursors.Default;
+                    pictureBox1.Visible = false;
+                    lblMsg.Text = "";
+
+                    dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
+                }
+
+                // 後片付け
+                Dispose();
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -287,8 +341,10 @@ namespace scXlsData
             txtsBuName.Enabled = false;
             txtsBuName.Text = string.Empty;
             button5.Enabled = false;
+
+            pictureBox1.Visible = false;
         }
-        
+
         private void Form1_Shown(object sender, EventArgs e)
         {
             dataGridView1.CurrentCell = null;
@@ -677,8 +733,8 @@ namespace scXlsData
                             msg = "解約管理表を読み込んでいます...";
 
                             lblMsg.Text = msg;
-                            System.Threading.Thread.Sleep(100);
-                            Application.DoEvents();
+                            //System.Threading.Thread.Sleep(100);
+                            //Application.DoEvents();
 
                             var sheet1 = bk.Worksheet(Properties.Settings.Default.xlsSheetName);
                             var tbl = sheet1.RangeUsed().AsTable();
@@ -2130,6 +2186,31 @@ namespace scXlsData
 
         private void button4_Click(object sender, EventArgs e)
         {
+            string sPath = System.IO.Path.GetDirectoryName(xlsFname);
+
+            // 自らのロックファイルを削除する
+            Utility.deleteLockFile(sPath, System.Net.Dns.GetHostName());
+
+            // 他のPCで処理中の場合、続行不可
+            //if (Utility.existsLockFile(sPath))
+            //{
+            //    MessageBox.Show("他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。再度実行してください。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            //    return;
+            //}
+            
+            while (Utility.existsLockFile(sPath))
+            {
+                Cursor = Cursors.WaitCursor;
+                pictureBox1.Visible = true;
+                lblMsg.Text = "他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。少々おまちください...";
+                System.Threading.Thread.Sleep(100);
+                Application.DoEvents();
+            }
+
+            lblMsg.Text = "";
+            Cursor = Cursors.Default;
+            pictureBox1.Visible = false;
+
             // Excelファイルを開く
             tFile = xlsFname;
             gridViewShowData(dataGridView1, tFile, xlsPass, string.Empty);
