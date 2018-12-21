@@ -34,6 +34,7 @@
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.cmbKanri = new System.Windows.Forms.ComboBox();
             this.cmbKanryo04 = new System.Windows.Forms.ComboBox();
             this.cmbHacchu03 = new System.Windows.Forms.ComboBox();
             this.cmbShorui04 = new System.Windows.Forms.ComboBox();
@@ -144,10 +145,10 @@
             this.button1 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.lblMsg = new System.Windows.Forms.Label();
-            this.txtsBuName = new System.Windows.Forms.TextBox();
-            this.label58 = new System.Windows.Forms.Label();
-            this.button5 = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.colorDialog1 = new System.Windows.Forms.ColorDialog();
+            this.filterStatusLabel = new System.Windows.Forms.Label();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -156,7 +157,6 @@
             // 
             // dataGridView1
             // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridView1.Location = new System.Drawing.Point(8, 34);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowTemplate.Height = 21;
@@ -203,6 +203,7 @@
             // panel2
             // 
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel2.Controls.Add(this.cmbKanri);
             this.panel2.Controls.Add(this.cmbKanryo04);
             this.panel2.Controls.Add(this.cmbHacchu03);
             this.panel2.Controls.Add(this.cmbShorui04);
@@ -311,6 +312,17 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(1117, 366);
             this.panel2.TabIndex = 4;
+            // 
+            // cmbKanri
+            // 
+            this.cmbKanri.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.cmbKanri.FormattingEnabled = true;
+            this.cmbKanri.ImeMode = System.Windows.Forms.ImeMode.Hiragana;
+            this.cmbKanri.Location = new System.Drawing.Point(6, 7);
+            this.cmbKanri.Name = "cmbKanri";
+            this.cmbKanri.Size = new System.Drawing.Size(96, 21);
+            this.cmbKanri.TabIndex = 105;
+            this.cmbKanri.SelectedValueChanged += new System.EventHandler(this.cmbKanri_SelectedValueChanged);
             // 
             // cmbKanryo04
             // 
@@ -422,6 +434,7 @@
             this.txtSkyOne01.Size = new System.Drawing.Size(105, 20);
             this.txtSkyOne01.TabIndex = 99;
             this.txtSkyOne01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtSkyOne01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label54
             // 
@@ -443,6 +456,7 @@
             this.txtBikou.Name = "txtBikou";
             this.txtBikou.Size = new System.Drawing.Size(741, 20);
             this.txtBikou.TabIndex = 97;
+            this.txtBikou.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label53
             // 
@@ -475,6 +489,7 @@
             this.txtKanryo03.Size = new System.Drawing.Size(105, 20);
             this.txtKanryo03.TabIndex = 93;
             this.txtKanryo03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKanryo03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label51
             // 
@@ -495,6 +510,7 @@
             this.txtKanryo02.Size = new System.Drawing.Size(105, 20);
             this.txtKanryo02.TabIndex = 91;
             this.txtKanryo02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKanryo02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label50
             // 
@@ -515,6 +531,7 @@
             this.txtKanryo01.Size = new System.Drawing.Size(105, 20);
             this.txtKanryo01.TabIndex = 89;
             this.txtKanryo01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKanryo01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label49
             // 
@@ -547,6 +564,7 @@
             this.txtKouji07.Size = new System.Drawing.Size(38, 20);
             this.txtKouji07.TabIndex = 86;
             this.txtKouji07.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKouji07.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label47
             // 
@@ -566,6 +584,7 @@
             this.txtKouji06.Size = new System.Drawing.Size(38, 20);
             this.txtKouji06.TabIndex = 84;
             this.txtKouji06.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKouji06.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label46
             // 
@@ -586,6 +605,7 @@
             this.txtKouji05.TabIndex = 82;
             this.txtKouji05.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtKouji05.TextChanged += new System.EventHandler(this.txtKouji05_TextChanged);
+            this.txtKouji05.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label45
             // 
@@ -606,6 +626,7 @@
             this.txtKouji04.Size = new System.Drawing.Size(105, 20);
             this.txtKouji04.TabIndex = 80;
             this.txtKouji04.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKouji04.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label44
             // 
@@ -626,6 +647,7 @@
             this.txtKouji03.Size = new System.Drawing.Size(105, 20);
             this.txtKouji03.TabIndex = 78;
             this.txtKouji03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKouji03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label43
             // 
@@ -646,6 +668,7 @@
             this.txtKouji02.Size = new System.Drawing.Size(105, 20);
             this.txtKouji02.TabIndex = 76;
             this.txtKouji02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKouji02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label42
             // 
@@ -698,6 +721,7 @@
             this.txtHacchu02.Size = new System.Drawing.Size(38, 20);
             this.txtHacchu02.TabIndex = 69;
             this.txtHacchu02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtHacchu02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label38
             // 
@@ -718,6 +742,7 @@
             this.txtHacchu01.TabIndex = 67;
             this.txtHacchu01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtHacchu01.TextChanged += new System.EventHandler(this.txtHacchu01_TextChanged);
+            this.txtHacchu01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label37
             // 
@@ -750,6 +775,7 @@
             this.txtTetsu05.Size = new System.Drawing.Size(105, 20);
             this.txtTetsu05.TabIndex = 64;
             this.txtTetsu05.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtTetsu05.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label35
             // 
@@ -770,6 +796,7 @@
             this.txtTetsu04.Size = new System.Drawing.Size(105, 20);
             this.txtTetsu04.TabIndex = 62;
             this.txtTetsu04.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtTetsu04.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label34
             // 
@@ -790,6 +817,7 @@
             this.txtTetsu03.Size = new System.Drawing.Size(38, 20);
             this.txtTetsu03.TabIndex = 60;
             this.txtTetsu03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtTetsu03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label33
             // 
@@ -810,6 +838,7 @@
             this.txtTetsu02.TabIndex = 58;
             this.txtTetsu02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtTetsu02.TextChanged += new System.EventHandler(this.txtTetsu02_TextChanged);
+            this.txtTetsu02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label32
             // 
@@ -830,6 +859,7 @@
             this.txtTetsu01.Size = new System.Drawing.Size(105, 20);
             this.txtTetsu01.TabIndex = 56;
             this.txtTetsu01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtTetsu01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label31
             // 
@@ -872,6 +902,7 @@
             this.txtShorui03.Size = new System.Drawing.Size(105, 20);
             this.txtShorui03.TabIndex = 51;
             this.txtShorui03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtShorui03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label28
             // 
@@ -892,6 +923,7 @@
             this.txtShorui02.Size = new System.Drawing.Size(105, 20);
             this.txtShorui02.TabIndex = 49;
             this.txtShorui02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtShorui02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label27
             // 
@@ -912,6 +944,7 @@
             this.txtShorui01.Size = new System.Drawing.Size(105, 20);
             this.txtShorui01.TabIndex = 47;
             this.txtShorui01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtShorui01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label26
             // 
@@ -964,6 +997,7 @@
             this.txtRoomCheck03.Size = new System.Drawing.Size(105, 20);
             this.txtRoomCheck03.TabIndex = 40;
             this.txtRoomCheck03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtRoomCheck03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label22
             // 
@@ -984,6 +1018,7 @@
             this.txtRoomCheck02.Size = new System.Drawing.Size(38, 20);
             this.txtRoomCheck02.TabIndex = 38;
             this.txtRoomCheck02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtRoomCheck02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label21
             // 
@@ -1004,6 +1039,7 @@
             this.txtRoomCheck01.TabIndex = 36;
             this.txtRoomCheck01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtRoomCheck01.TextChanged += new System.EventHandler(this.txtRoomCheck01_TextChanged);
+            this.txtRoomCheck01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label20
             // 
@@ -1025,6 +1061,7 @@
             this.txtKaiyaku04.TabIndex = 34;
             this.txtKaiyaku04.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.txtKaiyaku04.TextChanged += new System.EventHandler(this.txtKaiyaku04_TextChanged);
+            this.txtKaiyaku04.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label19
             // 
@@ -1039,12 +1076,13 @@
             // txtKaiyaku03
             // 
             this.txtKaiyaku03.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.txtKaiyaku03.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.txtKaiyaku03.ImeMode = System.Windows.Forms.ImeMode.Hiragana;
             this.txtKaiyaku03.Location = new System.Drawing.Point(161, 311);
             this.txtKaiyaku03.Name = "txtKaiyaku03";
             this.txtKaiyaku03.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyaku03.TabIndex = 32;
             this.txtKaiyaku03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyaku03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label18
             // 
@@ -1065,6 +1103,7 @@
             this.txtKaiyaku02.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyaku02.TabIndex = 30;
             this.txtKaiyaku02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyaku02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label17
             // 
@@ -1085,6 +1124,7 @@
             this.txtKaiyaku01.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyaku01.TabIndex = 28;
             this.txtKaiyaku01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyaku01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label16
             // 
@@ -1139,6 +1179,7 @@
             this.txtKaiyakuContact07.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact07.TabIndex = 22;
             this.txtKaiyakuContact07.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact07.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label12
             // 
@@ -1171,6 +1212,7 @@
             this.txtKaiyakuContact06.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact06.TabIndex = 19;
             this.txtKaiyakuContact06.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact06.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label10
             // 
@@ -1191,6 +1233,7 @@
             this.txtKaiyakuContact05.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact05.TabIndex = 17;
             this.txtKaiyakuContact05.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact05.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label9
             // 
@@ -1211,6 +1254,7 @@
             this.txtKaiyakuContact04.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact04.TabIndex = 15;
             this.txtKaiyakuContact04.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact04.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label8
             // 
@@ -1231,6 +1275,7 @@
             this.txtKaiyakuContact03.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact03.TabIndex = 13;
             this.txtKaiyakuContact03.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact03.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label7
             // 
@@ -1251,6 +1296,7 @@
             this.txtKaiyakuContact02.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact02.TabIndex = 11;
             this.txtKaiyakuContact02.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact02.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label6
             // 
@@ -1271,6 +1317,7 @@
             this.txtKaiyakuContact01.Size = new System.Drawing.Size(105, 20);
             this.txtKaiyakuContact01.TabIndex = 9;
             this.txtKaiyakuContact01.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtKaiyakuContact01.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // label5
             // 
@@ -1291,31 +1338,34 @@
             this.txtNewStayDate.Size = new System.Drawing.Size(105, 20);
             this.txtNewStayDate.TabIndex = 7;
             this.txtNewStayDate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtNewStayDate.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // txtGou
             // 
             this.txtGou.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.txtGou.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.txtGou.Location = new System.Drawing.Point(745, 8);
+            this.txtGou.Location = new System.Drawing.Point(789, 8);
             this.txtGou.Name = "txtGou";
             this.txtGou.Size = new System.Drawing.Size(49, 20);
             this.txtGou.TabIndex = 6;
             this.txtGou.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.txtGou.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // txtBuName
             // 
             this.txtBuName.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.txtBuName.ImeMode = System.Windows.Forms.ImeMode.Hiragana;
-            this.txtBuName.Location = new System.Drawing.Point(196, 8);
+            this.txtBuName.Location = new System.Drawing.Point(293, 8);
             this.txtBuName.Name = "txtBuName";
-            this.txtBuName.Size = new System.Drawing.Size(544, 20);
+            this.txtBuName.Size = new System.Drawing.Size(490, 20);
             this.txtBuName.TabIndex = 5;
+            this.txtBuName.DoubleClick += new System.EventHandler(this.txtKaiyakuContact01_DoubleClick);
             // 
             // txtBuCode
             // 
             this.txtBuCode.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.txtBuCode.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.txtBuCode.Location = new System.Drawing.Point(59, 8);
+            this.txtBuCode.Location = new System.Drawing.Point(161, 8);
             this.txtBuCode.Name = "txtBuCode";
             this.txtBuCode.Size = new System.Drawing.Size(73, 20);
             this.txtBuCode.TabIndex = 4;
@@ -1336,7 +1386,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label3.Location = new System.Drawing.Point(795, 12);
+            this.label3.Location = new System.Drawing.Point(839, 12);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(33, 13);
             this.label3.TabIndex = 2;
@@ -1346,7 +1396,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label2.Location = new System.Drawing.Point(149, 11);
+            this.label2.Location = new System.Drawing.Point(247, 11);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(46, 13);
             this.label2.TabIndex = 1;
@@ -1356,7 +1406,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label1.Location = new System.Drawing.Point(6, 11);
+            this.label1.Location = new System.Drawing.Point(112, 11);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(50, 13);
             this.label1.TabIndex = 0;
@@ -1436,37 +1486,6 @@
             this.lblMsg.TabIndex = 106;
             this.lblMsg.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // txtsBuName
-            // 
-            this.txtsBuName.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.txtsBuName.ImeMode = System.Windows.Forms.ImeMode.Hiragana;
-            this.txtsBuName.Location = new System.Drawing.Point(822, 8);
-            this.txtsBuName.Name = "txtsBuName";
-            this.txtsBuName.Size = new System.Drawing.Size(232, 20);
-            this.txtsBuName.TabIndex = 107;
-            this.txtsBuName.TextChanged += new System.EventHandler(this.txtsBuName_TextChanged);
-            // 
-            // label58
-            // 
-            this.label58.AutoSize = true;
-            this.label58.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.label58.Location = new System.Drawing.Point(770, 12);
-            this.label58.Name = "label58";
-            this.label58.Size = new System.Drawing.Size(46, 13);
-            this.label58.TabIndex = 108;
-            this.label58.Text = "物件名";
-            // 
-            // button5
-            // 
-            this.button5.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.button5.Location = new System.Drawing.Point(1060, 6);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(65, 24);
-            this.button5.TabIndex = 109;
-            this.button5.Text = "検索";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
             // pictureBox1
             // 
             this.pictureBox1.Image = global::scXlsData.Properties.Resources._496_24;
@@ -1476,15 +1495,34 @@
             this.pictureBox1.TabIndex = 110;
             this.pictureBox1.TabStop = false;
             // 
+            // filterStatusLabel
+            // 
+            this.filterStatusLabel.Location = new System.Drawing.Point(892, 9);
+            this.filterStatusLabel.Name = "filterStatusLabel";
+            this.filterStatusLabel.Size = new System.Drawing.Size(172, 21);
+            this.filterStatusLabel.TabIndex = 111;
+            this.filterStatusLabel.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+            this.linkLabel1.Location = new System.Drawing.Point(1072, 17);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(53, 12);
+            this.linkLabel1.TabIndex = 112;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "Show ALL";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1138, 683);
+            this.Controls.Add(this.linkLabel1);
+            this.Controls.Add(this.filterStatusLabel);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.button5);
-            this.Controls.Add(this.label58);
-            this.Controls.Add(this.txtsBuName);
             this.Controls.Add(this.lblMsg);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.button1);
@@ -1631,10 +1669,11 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label lblMsg;
-        private System.Windows.Forms.TextBox txtsBuName;
-        private System.Windows.Forms.Label label58;
-        private System.Windows.Forms.Button button5;
         private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.ColorDialog colorDialog1;
+        private System.Windows.Forms.ComboBox cmbKanri;
+        private System.Windows.Forms.Label filterStatusLabel;
+        private System.Windows.Forms.LinkLabel linkLabel1;
     }
 }
 

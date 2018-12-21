@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.OleDb;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 using ClosedXML.Excel;
 using scXlsData.common;
+using DataGridViewAutoFilter;
 
 namespace scXlsData
 {
@@ -19,27 +21,34 @@ namespace scXlsData
         {
             InitializeComponent();
 
+            dataGridView1.BindingContextChanged += new EventHandler(dataGridView1_BindingContextChanged);
+
+            dataGridView1.DataBindingComplete += new DataGridViewBindingCompleteEventHandler(dataGridView1_DataBindingComplete);
+            
             xlsFname = _xlsFName;
             xlsPass = _xlsPass;
             xlsJyokenFormat = _xlsJyokenFormat;
 
             Utility.WindowsMaxSize(this, this.Width, this.Height);
             Utility.WindowsMinSize(this, this.Width, this.Height);
-        }
 
-        //DataSet1 dts = new DataSet1();
-        //DataSet1TableAdapters.環境設定TableAdapter adp = new DataSet1TableAdapters.環境設定TableAdapter();
+            // データセットにデータテーブルをセットする
+            dts.Tables.Add(dTbl);
+        }
 
         string tFile = string.Empty;
         string xlsFname = string.Empty;
         string xlsPass = string.Empty;
         int xlsJyokenFormat = 0;
 
-        string upFlg = "1";     // 更新フラグ
-        string addFlg = "2";    // 追加フラグ
-        int uCnt = 0;           // 更新カウント
+        string upFlg = "1";         // 更新フラグ
+        string addFlg = "2";        // 追加フラグ
+        int uCnt = 0;               // 更新カウント
+
+        const string TAKAN = "他管";      // 他会社管理：2018/12/18
 
         #region グリッドカラム定義
+        string col_Kanri = "c0";        // 他管：2018/12/18
         string colBuCode = "c1";        // 物件ＣＤ
         string colBuName = "c2";        // 物件名
         string colGou = "c3";           // 号室
@@ -116,39 +125,39 @@ namespace scXlsData
 
         #endregion
 
+        DataSet dts = new DataSet();
+        DataTable dTbl = new DataTable();
+
+        int maxRow = 0;
+
+        clsColor[] colorArrays = null;
+
+        string[] textBoxIndex = { "txtBuCode, 2", "txtBuName, 3" };
+
+
+        private void dataGridView1_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            String filterStatus = DataGridViewAutoFilterColumnHeaderCell.GetFilterStatus(dataGridView1);
+
+            if (String.IsNullOrEmpty(filterStatus))
+            {
+                linkLabel1.Visible = false;
+                filterStatusLabel.Visible = false;
+            }
+            else
+            {
+                linkLabel1.Visible = true;
+                filterStatusLabel.Visible = true;
+                filterStatusLabel.Text = filterStatus;
+            }
+
+            // データグリッドビューセルカラーセット
+            setGridviewFontColor(dataGridView1, colorArrays);
+        }
+
+
         private void button3_Click(object sender, EventArgs e)
         {
-            //if (uCnt > 0)
-            //{
-            //    if (MessageBox.Show(uCnt + "件の更新を保存して終了しますか？", "更新確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-            //    {
-            //        string sPath = System.IO.Path.GetDirectoryName(xlsFname);
-
-            //        // 他のPCで処理中の場合、続行不可
-            //        //if (Utility.existsLockFile(sPath))
-            //        //{
-            //        //    MessageBox.Show("他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。再度実行してください。", "確認", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            //        //    return;
-            //        //}
-
-            //        // 他のPCで処理中の場合、続行不可
-            //        while (Utility.existsLockFile(sPath))
-            //        {
-            //            Cursor = Cursors.WaitCursor;
-            //            pictureBox1.Visible = true;
-            //            lblMsg.Text = "他のPCが解約管理表エクセルファイルをオープンまたはクローズ中です。少々おまちください...";
-            //            System.Threading.Thread.Sleep(100);
-            //            Application.DoEvents();
-            //        }
-
-            //        Cursor = Cursors.Default;
-            //        pictureBox1.Visible = false;
-            //        lblMsg.Text = "";
-
-            //        dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
-            //    }
-            //}
-
             // フォームを閉じる
             Close();
         }
@@ -182,7 +191,13 @@ namespace scXlsData
                     pictureBox1.Visible = false;
                     lblMsg.Text = "";
 
-                    dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
+                    //dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
+
+                    //// データグリッドビュー変更追加行で黒以外の文字色セルを取得
+                    //getGridFontColor(dataGridView1);
+
+                    // シートのセルにデータを書き込む
+                    excelUpdateFromDataTable(dTbl, tFile, xlsPass, string.Empty, colorArrays);
                 }
 
                 // 後片付け
@@ -230,13 +245,6 @@ namespace scXlsData
 
             //// 項目の高さを設定
             //cmbKaiyakuContact08.ItemHeight = 18;
-
-            //// DrawItemイベントハンドラの追加
-            //cmbKaiyakuContact08.DrawItem += new DrawItemEventHandler(ComboBox1_DrawItem);
-            ////ComboBox1のリストに項目を追加する
-            //cmbKaiyakuContact08.Items.Add("おはよう。");
-            //cmbKaiyakuContact08.Items.Add("こんにちは。");
-            //cmbKaiyakuContact08.Items.Add("こんばんは。");
 
             txtKaiyaku01.AutoSize = false;
             txtKaiyaku01.Height = 20;
@@ -332,17 +340,19 @@ namespace scXlsData
             txtBikou.Height = 20;
 
             // データグリッドビュー定義
-            GridViewSetting(dataGridView1);
+            //GridViewSetting(dataGridView1);
 
             panel1.Enabled = false;
             button1.Enabled = false;
             button2.Enabled = false;
 
-            txtsBuName.Enabled = false;
-            txtsBuName.Text = string.Empty;
-            button5.Enabled = false;
-
             pictureBox1.Visible = false;
+
+            filterStatusLabel.Text = "";
+            filterStatusLabel.Visible = false;
+            linkLabel1.Text = "Show All";
+            linkLabel1.Visible = false;
+            linkLabel1.LinkBehavior = LinkBehavior.HoverUnderline;
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -371,7 +381,7 @@ namespace scXlsData
             // エクセルオブジェクト
             Excel.Application oXls = new Excel.Application();
             Excel.Workbook oXlsBook = null;
-            
+
             try
             {
                 if (rPw != string.Empty)
@@ -470,7 +480,7 @@ namespace scXlsData
         /// <param name="tempDGV">
         ///     データグリッドビューオブジェクト</param>
         ///---------------------------------------------------------------------
-        public void GridViewSetting(DataGridView tempDGV)
+        public void GridViewSetting(DataGridView tempDGV, string hd)
         {
             try
             {
@@ -510,101 +520,42 @@ namespace scXlsData
                 tempDGV.MultiSelect = false;
 
                 // カラム定義
-                tempDGV.Columns.Add(colBuCode, "物件ＣＤ");
-                tempDGV.Columns.Add(colBuName, "物件名");
-                tempDGV.Columns.Add(colGou, "号室");
-                tempDGV.Columns.Add(colNewStayDate, "新規入居開始日");
+                string[] h = hd.Split(',');
 
-                // 解約申し込み
-                tempDGV.Columns.Add(col_KaiyakuContact_01, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_02, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_03, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_04, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_05, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_06, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_07, "解約申し込み");
-                tempDGV.Columns.Add(col_KaiyakuContact_08, "解約申し込み");
+                // 列見出し
+                if (h.Length > 0)
+                {
+                    for (int i = 0; i < h.Length; i++)
+                    {
+                        tempDGV.Columns[i].HeaderText = h[i];
+                    }
+                }
 
-                // 解約
-                tempDGV.Columns.Add(col_Kaiyaku_01, "解約");
-                tempDGV.Columns.Add(col_Kaiyaku_02, "解約");
-                tempDGV.Columns.Add(col_Kaiyaku_03, "解約");
-                tempDGV.Columns.Add(col_Kaiyaku_04, "解約");
 
-                // ルームチェック
-                tempDGV.Columns.Add(col_RoomCheck_01, "ルームチェック");
-                tempDGV.Columns.Add(col_RoomCheck_02, "ルームチェック");
-                tempDGV.Columns.Add(col_RoomCheck_03, "ルームチェック");
-                tempDGV.Columns.Add(col_RoomCheck_04, "ルームチェック");
-                tempDGV.Columns.Add(col_RoomCheck_05, "ルームチェック");
-
-                // 書類作成
-                tempDGV.Columns.Add(col_Shorui_01, "書類作成");
-                tempDGV.Columns.Add(col_Shorui_02, "書類作成");
-                tempDGV.Columns.Add(col_Shorui_03, "書類作成");
-                tempDGV.Columns.Add(col_Shorui_04, "書類作成");
-
-                // 手続き
-                tempDGV.Columns.Add(col_Tetsu_01, "手続き");
-                tempDGV.Columns.Add(col_Tetsu_02, "手続き");
-                tempDGV.Columns.Add(col_Tetsu_03, "手続き");
-                tempDGV.Columns.Add(col_Tetsu_04, "手続き");
-                tempDGV.Columns.Add(col_Tetsu_05, "手続き");
-
-                // 発注
-                tempDGV.Columns.Add(col_Hacchu_01, "超過時間");
-                tempDGV.Columns.Add(col_Hacchu_02, "超過時間");
-                tempDGV.Columns.Add(col_Hacchu_03, "超過時間");
-
-                // 工事着工
-                tempDGV.Columns.Add(col_Kouji_01, "発注");
-                tempDGV.Columns.Add(col_Kouji_02, "発注");
-                tempDGV.Columns.Add(col_Kouji_03, "発注");
-                tempDGV.Columns.Add(col_Kouji_04, "発注");
-                tempDGV.Columns.Add(col_Kouji_05, "発注");
-                tempDGV.Columns.Add(col_Kouji_06, "発注");
-                tempDGV.Columns.Add(col_Kouji_07, "発注");
-
-                // 完了検査
-                tempDGV.Columns.Add(col_Kanryo_01, "完了検査");
-                tempDGV.Columns.Add(col_Kanryo_02, "完了検査");
-                tempDGV.Columns.Add(col_Kanryo_03, "完了検査");
-                tempDGV.Columns.Add(col_Kanryo_04, "完了検査");
-
-                // 備考
-                tempDGV.Columns.Add(col_Bikou_01, "備考");
-
-                // スカイワン
-                tempDGV.Columns.Add(col_SkyOne_01, "スカイワン");
-                tempDGV.Columns.Add(col_SkyOne_02, "スカイワン");
-
-                // 行番号
-                tempDGV.Columns.Add(col_xlsRowNum, "行");
-                //tempDGV.Columns[col_xlsRowNum].Visible = false;
-
-                // 更新フラグ
-                tempDGV.Columns.Add(col_upFlg, "update");
+                //// 更新フラグ
+                //tempDGV.Columns.Add(col_upFlg, "update");
                 tempDGV.Columns[col_upFlg].Visible = false;
 
                 // 各列幅指定
-                tempDGV.Columns[colBuCode].Width = 70;
+                tempDGV.Columns[col_Kanri].Width = 70;  // 2018/12/18
+                tempDGV.Columns[colBuCode].Width = 80;
                 tempDGV.Columns[colBuName].Width = 200;
-                tempDGV.Columns[colGou].Width = 60;
-                tempDGV.Columns[colNewStayDate].Width = 120;
+                tempDGV.Columns[colGou].Width = 70;
+                tempDGV.Columns[colNewStayDate].Width = 130;
 
                 tempDGV.Columns[colNewStayDate].Frozen = true;
 
-                tempDGV.Columns[col_KaiyakuContact_01].Width = 100;
-                tempDGV.Columns[col_KaiyakuContact_02].Width = 126;
+                tempDGV.Columns[col_KaiyakuContact_01].Width = 110;
+                tempDGV.Columns[col_KaiyakuContact_02].Width = 136;
                 tempDGV.Columns[col_KaiyakuContact_03].Width = 100;
                 tempDGV.Columns[col_KaiyakuContact_04].Width = 100;
                 tempDGV.Columns[col_KaiyakuContact_05].Width = 100;
                 tempDGV.Columns[col_KaiyakuContact_06].Width = 120;
                 tempDGV.Columns[col_KaiyakuContact_07].Width = 120;
-                tempDGV.Columns[col_KaiyakuContact_08].Width = 130;
+                tempDGV.Columns[col_KaiyakuContact_08].Width = 140;
 
                 tempDGV.Columns[col_Kaiyaku_01].Width = 100;
-                tempDGV.Columns[col_Kaiyaku_02].Width = 100;
+                tempDGV.Columns[col_Kaiyaku_02].Width = 110;
                 tempDGV.Columns[col_Kaiyaku_03].Width = 100;
                 tempDGV.Columns[col_Kaiyaku_04].Width = 100;
 
@@ -612,17 +563,17 @@ namespace scXlsData
                 tempDGV.Columns[col_RoomCheck_02].Width = 210;
                 tempDGV.Columns[col_RoomCheck_03].Width = 100;
                 tempDGV.Columns[col_RoomCheck_04].Width = 100;
-                tempDGV.Columns[col_RoomCheck_05].Width = 100;
+                tempDGV.Columns[col_RoomCheck_05].Width = 110;
 
-                tempDGV.Columns[col_Shorui_01].Width = 120;
-                tempDGV.Columns[col_Shorui_02].Width = 126;
+                tempDGV.Columns[col_Shorui_01].Width = 130;
+                tempDGV.Columns[col_Shorui_02].Width = 136;
                 tempDGV.Columns[col_Shorui_03].Width = 120;
                 tempDGV.Columns[col_Shorui_04].Width = 120;
 
-                tempDGV.Columns[col_Tetsu_01].Width = 110;
-                tempDGV.Columns[col_Tetsu_02].Width = 120;
+                tempDGV.Columns[col_Tetsu_01].Width = 120;
+                tempDGV.Columns[col_Tetsu_02].Width = 130;
                 tempDGV.Columns[col_Tetsu_03].Width = 200;
-                tempDGV.Columns[col_Tetsu_04].Width = 100;
+                tempDGV.Columns[col_Tetsu_04].Width = 110;
                 tempDGV.Columns[col_Tetsu_05].Width = 120;
 
                 tempDGV.Columns[col_Hacchu_01].Width = 100;
@@ -630,24 +581,25 @@ namespace scXlsData
                 tempDGV.Columns[col_Hacchu_03].Width = 100;
 
                 tempDGV.Columns[col_Kouji_01].Width = 200;
-                tempDGV.Columns[col_Kouji_02].Width = 120;
+                tempDGV.Columns[col_Kouji_02].Width = 130;
                 tempDGV.Columns[col_Kouji_03].Width = 100;
-                tempDGV.Columns[col_Kouji_04].Width = 120;
+                tempDGV.Columns[col_Kouji_04].Width = 130;
                 tempDGV.Columns[col_Kouji_05].Width = 100;
                 tempDGV.Columns[col_Kouji_06].Width = 190;
                 tempDGV.Columns[col_Kouji_07].Width = 200;
 
-                tempDGV.Columns[col_Kanryo_01].Width = 100;
+                tempDGV.Columns[col_Kanryo_01].Width = 110;
                 tempDGV.Columns[col_Kanryo_02].Width = 100;
                 tempDGV.Columns[col_Kanryo_03].Width = 100;
-                tempDGV.Columns[col_Kanryo_04].Width = 110;
+                tempDGV.Columns[col_Kanryo_04].Width = 120;
 
                 tempDGV.Columns[col_Bikou_01].Width = 400;
 
                 tempDGV.Columns[col_SkyOne_01].Width = 100;
                 tempDGV.Columns[col_SkyOne_02].Width = 100;
 
-                tempDGV.Columns[col_xlsRowNum].Width = 50;
+                //tempDGV.Columns[col_xlsRowNum].Width = 50;
+                tempDGV.Columns[col_xlsRowNum].Visible = false;
 
                 // 表示位置
                 for (int i = 0; i < tempDGV.Columns.Count; i++)
@@ -690,9 +642,46 @@ namespace scXlsData
             }
         }
 
+        ///-----------------------------------------------------------------------------
+        /// <summary>
+        ///     データグリッドビューのセルの文字色、背景色をセットする </summary>
+        /// <param name="dg">
+        ///     データグリッドビューオブジェクト</param>
+        /// <param name="colors">
+        ///     カラー属性配列</param>
+        ///-----------------------------------------------------------------------------
+        private void setGridviewFontColor(DataGridView dg, clsColor[] colors)
+        {
+            // 背景色・文字色：2018/12/11, 2018/12/18
+            for (int i = 0; i < colors.Length; i++)
+            {
+                for (int X = 0; X < dg.RowCount; X++)
+                {
+                    if (Utility.StrtoInt(Utility.NulltoStr(dg[col_xlsRowNum, X].Value)) == colors[i].cRow)
+                    {
+                        // 文字色
+                        if (colors[i].cColor != Color.Empty)
+                        {
+                            //dg[colors[i].cColumn, X].Style.ForeColor = colors[i].cColor;
+                            dg[colors[i].cColumn, X].Style.ForeColor = Color.FromArgb(colors[i].cColor.ToArgb());
+                        }
+
+                        // セル背景色
+                        if (colors[i].bColor != Color.Empty)
+                        {
+                            dg[colors[i].cColumn, X].Style.BackColor = colors[i].bColor;
+                        }
+                    }
+                }
+            }
+
+            dg.CurrentCell = null;
+        }
+
+
         ///---------------------------------------------------------------------------------
         /// <summary>
-        ///     エクセルシートの内容をデータグリッドビューに表示する </summary>
+        ///     エクセルシートの内容をデータテーブルに読み込みグリッドビューにバインドする </summary>
         /// <param name="g">
         ///     データグリッドビューオブジェクト</param>
         /// <param name="sFile">
@@ -705,6 +694,7 @@ namespace scXlsData
         private void gridViewShowData(DataGridView g, string sFile, string rPass, string wPass)
         {
             string msg = "";
+            string gHead = "";
 
             Cursor = Cursors.WaitCursor;
 
@@ -733,13 +723,16 @@ namespace scXlsData
                             msg = "解約管理表を読み込んでいます...";
 
                             lblMsg.Text = msg;
-                            //System.Threading.Thread.Sleep(100);
-                            //Application.DoEvents();
+
+                            ////System.Threading.Thread.Sleep(100);
+                            ////Application.DoEvents();
 
                             var sheet1 = bk.Worksheet(Properties.Settings.Default.xlsSheetName);
                             var tbl = sheet1.RangeUsed().AsTable();
 
-                            g.Rows.Clear();
+                            getDataTableFromExcelofColumn(tbl, dTbl);
+
+                            //g.Rows.Clear();
 
                             foreach (var t in tbl.DataRange.Rows())
                             {
@@ -748,11 +741,21 @@ namespace scXlsData
                                     continue;
                                 }
 
+                                // データヘッダ行
                                 if (t.RowNumber() == 5)
                                 {
                                     for (int i = 0; i < tbl.DataRange.ColumnCount(); i++)
                                     {
-                                        g.Columns[i].HeaderText = Utility.NulltoStr(t.Cell(i + 1).Value).Replace("\n", "").Replace("\r", "").Replace(" ", "").Replace("　", "");
+                                        string hd = Utility.NulltoStr(t.Cell(i + 1).Value).Replace("\n", "").Replace("\r", "").Replace(" ", "").Replace("　", "");
+
+                                        if (gHead == "")
+                                        {
+                                            gHead = hd;
+                                        }
+                                        else
+                                        {
+                                            gHead += ("," + hd);
+                                        }
                                     }
                                 }
                                 else
@@ -761,22 +764,22 @@ namespace scXlsData
                                     System.Threading.Thread.Sleep(10);
                                     Application.DoEvents();
 
-                                    g.Rows.Add();
+                                    DataRow dataRow = dTbl.NewRow();
 
                                     for (int i = 0; i < tbl.DataRange.ColumnCount(); i++)
                                     {
                                         DateTime dt;
 
-                                        if (i == 8)
+                                        if (i == 9)
                                         {
                                             // 立会時間
                                             if (DateTime.TryParse(Utility.NulltoStr(t.Cell(i + 1).Value), out dt))
                                             {
-                                                g[i, g.Rows.Count - 1].Value = dt.Hour + ":" + dt.Minute.ToString().PadLeft(2, '0');
+                                                dataRow[i] = dt.Hour + ":" + dt.Minute.ToString().PadLeft(2, '0');
                                             }
                                             else
                                             {
-                                                g[i, g.Rows.Count - 1].Value = Utility.NulltoStr(t.Cell(i + 1).Value);
+                                                dataRow[i] = Utility.NulltoStr(t.Cell(i + 1).Value);
                                             }
                                         }
                                         else
@@ -785,21 +788,106 @@ namespace scXlsData
                                             if (DateTime.TryParse(Utility.NulltoStr(t.Cell(i + 1).Value), out dt))
                                             {
                                                 // 日付情報
-                                                g[i, g.Rows.Count - 1].Value = dt.ToShortDateString();
+                                                dataRow[i] = dt.ToShortDateString();
                                             }
                                             else
                                             {
                                                 // 文字列情報
-                                                g[i, g.Rows.Count - 1].Value = Utility.NulltoStr(t.Cell(i + 1).Value);
+                                                dataRow[i] = Utility.NulltoStr(t.Cell(i + 1).Value);
+                                            }
+                                        }
+
+                                        // 文字色情報取得：2018/12/11
+                                        IXLFontBase xLFontBase = t.Cell(i + 1).Style.Font;
+
+                                        if (xLFontBase.FontColor.ColorType == XLColorType.Color)
+                                        {
+                                            Color color = xLFontBase.FontColor.Color;
+
+                                            // デバッグモード
+                                            if (t.RowNumber() == 18)
+                                            {
+                                                System.Diagnostics.Debug.WriteLine(i);
+                                                System.Diagnostics.Debug.WriteLine(color.Name);
+                                                System.Diagnostics.Debug.WriteLine(t.RowNumber());
+                                            }
+
+                                            // 文字色が黒以外のとき配列に情報を保管
+                                            if (color.Name != "Black")
+                                            {
+                                                if (colorArrays == null)
+                                                {
+                                                    Array.Resize(ref colorArrays, 1);
+                                                }
+                                                else
+                                                {
+                                                    Array.Resize(ref colorArrays, colorArrays.Length + 1);
+                                                }
+
+                                                colorArrays[colorArrays.Length - 1] = new clsColor();
+                                                colorArrays[colorArrays.Length - 1].cColor = color;
+                                                colorArrays[colorArrays.Length - 1].bColor = Color.Empty;
+                                                colorArrays[colorArrays.Length - 1].cRow = t.RowNumber();
+                                                colorArrays[colorArrays.Length - 1].cColumn = i;
+
+                                                // デバッグモード
+                                                //if (t.RowNumber()== 18)
+                                                //{
+                                                    //System.Diagnostics.Debug.WriteLine(colorArrays[colorArrays.Length - 1].cColor.Name);
+                                                    //System.Diagnostics.Debug.WriteLine(colorArrays[colorArrays.Length - 1].cColumn);
+                                                    //System.Diagnostics.Debug.WriteLine(colorArrays[colorArrays.Length - 1].cRow);
+                                                //}
+                                            }
+                                        }
+
+                                        if (i == 0) // 他管
+                                        {
+                                            // セル背景色情報取得：2018/12/18
+                                            IXLFill xLFill = t.Cell(i + 1).Style.Fill;
+
+                                            if (xLFill.BackgroundColor.ColorType == XLColorType.Color)
+                                            {
+                                                Color color = xLFill.BackgroundColor.Color;
+
+                                                // 他管を対象
+                                                if (color.Name == "Red")
+                                                {
+                                                    if (colorArrays == null)
+                                                    {
+                                                        Array.Resize(ref colorArrays, 1);
+                                                    }
+                                                    else
+                                                    {
+                                                        Array.Resize(ref colorArrays, colorArrays.Length + 1);
+                                                    }
+
+                                                    colorArrays[colorArrays.Length - 1] = new clsColor();
+                                                    colorArrays[colorArrays.Length - 1].cColor = Color.Empty;
+                                                    colorArrays[colorArrays.Length - 1].bColor = color;
+                                                    colorArrays[colorArrays.Length - 1].cRow = t.RowNumber();
+                                                    colorArrays[colorArrays.Length - 1].cColumn = i;
+                                                }
                                             }
                                         }
                                     }
 
-                                    g[col_xlsRowNum, g.Rows.Count - 1].Value = t.RowNumber();
+                                    maxRow = t.RowNumber();
+                                    dataRow[col_xlsRowNum] = t.RowNumber();
+                                    dataRow[col_upFlg] = "0";
+
+                                    dTbl.Rows.Add(dataRow);
                                 }
                             }
 
                             sheet1.Dispose();
+
+                            // データグリッドビューにバインディング
+                            BindingSource bs = new BindingSource();
+                            bs.DataSource = dTbl;
+                            g.DataSource = bs;
+
+                            // データグリッドビューオブジェクト設定
+                            GridViewSetting(dataGridView1, gHead);
 
                             lblMsg.Text = "解約管理表の読み込みが終了しました...";
                             System.Threading.Thread.Sleep(30);
@@ -831,6 +919,157 @@ namespace scXlsData
             }
         }
 
+        private void getDataTableFromExcelofColumn(IXLTable tbl, DataTable dt)
+        {
+            dt.Columns.Add(col_Kanri, typeof(string));  // 他管：2018/12/18
+            dt.Columns.Add(colBuCode, typeof(int));
+            dt.Columns.Add(colBuName, typeof(string));
+            dt.Columns.Add(colGou, typeof(string));
+            dt.Columns.Add(colNewStayDate, typeof(string));
+
+            // 解約申し込み
+            dt.Columns.Add(col_KaiyakuContact_01, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_02, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_03, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_04, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_05, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_06, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_07, typeof(string));
+            dt.Columns.Add(col_KaiyakuContact_08, typeof(string));
+
+            // 解約
+            dt.Columns.Add(col_Kaiyaku_01, typeof(string));
+            dt.Columns.Add(col_Kaiyaku_02, typeof(string));
+            dt.Columns.Add(col_Kaiyaku_03, typeof(string));
+            dt.Columns.Add(col_Kaiyaku_04, typeof(string));
+
+            // ルームチェック
+            dt.Columns.Add(col_RoomCheck_01, typeof(string));
+            dt.Columns.Add(col_RoomCheck_02, typeof(string));
+            dt.Columns.Add(col_RoomCheck_03, typeof(string));
+            dt.Columns.Add(col_RoomCheck_04, typeof(string));
+            dt.Columns.Add(col_RoomCheck_05, typeof(string));
+
+            // 書類作成
+            dt.Columns.Add(col_Shorui_01, typeof(string));
+            dt.Columns.Add(col_Shorui_02, typeof(string));
+            dt.Columns.Add(col_Shorui_03, typeof(string));
+            dt.Columns.Add(col_Shorui_04, typeof(string));
+
+            // 手続き
+            dt.Columns.Add(col_Tetsu_01, typeof(string));
+            dt.Columns.Add(col_Tetsu_02, typeof(string));
+            dt.Columns.Add(col_Tetsu_03, typeof(string));
+            dt.Columns.Add(col_Tetsu_04, typeof(string));
+            dt.Columns.Add(col_Tetsu_05, typeof(string));
+
+            // 発注
+            dt.Columns.Add(col_Hacchu_01, typeof(string));
+            dt.Columns.Add(col_Hacchu_02, typeof(string));
+            dt.Columns.Add(col_Hacchu_03, typeof(string));
+
+            // 工事着工
+            dt.Columns.Add(col_Kouji_01, typeof(string));
+            dt.Columns.Add(col_Kouji_02, typeof(string));
+            dt.Columns.Add(col_Kouji_03, typeof(string));
+            dt.Columns.Add(col_Kouji_04, typeof(string));
+            dt.Columns.Add(col_Kouji_05, typeof(string));
+            dt.Columns.Add(col_Kouji_06, typeof(string));
+            dt.Columns.Add(col_Kouji_07, typeof(string));
+
+            // 完了検査
+            dt.Columns.Add(col_Kanryo_01, typeof(string));
+            dt.Columns.Add(col_Kanryo_02, typeof(string));
+            dt.Columns.Add(col_Kanryo_03, typeof(string));
+            dt.Columns.Add(col_Kanryo_04, typeof(string));
+
+            // 備考
+            dt.Columns.Add(col_Bikou_01, typeof(string));
+
+            // スカイワン
+            dt.Columns.Add(col_SkyOne_01, typeof(string));
+            dt.Columns.Add(col_SkyOne_02, typeof(string));
+
+            // 行番号
+            dt.Columns.Add(col_xlsRowNum, typeof(int));
+
+            // 更新
+            dt.Columns.Add(col_upFlg, typeof(string));
+
+            // 主キー
+            dt.PrimaryKey = new DataColumn[] { dTbl.Columns[col_xlsRowNum] };
+        }
+
+        ///-------------------------------------------------------------------
+        /// <summary>
+        ///     Excelファイル（純粋な表）からDataTableを返す </summary>
+        /// <param name="strFilePath">
+        ///     Excelファイルパス</param>
+        /// <param name="strSheetName">
+        ///     取り込むシート名</param>
+        /// <param name="isInHeader">
+        ///     1行目はヘッダー扱いとするか</param>
+        /// <param name="isAllStrColum">
+        ///     すべて文字列として要素を取得するか</param>
+        /// <returns>
+        ///     DataTable</returns>
+        ///-------------------------------------------------------------------
+        private DataTable GetDataTableFromExcelOfPureTable(String strFilePath, String strSheetName, Boolean isInHeader = true, Boolean isAllStrColum = true)
+        {
+            DataTable dt = new DataTable();
+            String strInHeader = isInHeader ? "YES" : "NO";        // ヘッダー設定
+            String strIMEX = isAllStrColum ? "IMEX=1;" : "";   // 文字列型設定
+            String strFileEx = System.IO.Path.GetExtension(strFilePath);   // ファイル拡張子
+            String strExcelVer = "Excel ";                         // Excelファイルver確認
+
+            if (strFileEx == ".xls")
+            {
+                strExcelVer += "8.0;";
+            }
+            else if (strFileEx == ".xlsx" || strFileEx == ".xlsm")
+            {
+                strExcelVer += "12.0;";
+            }
+            else
+            {
+                return null;
+            }
+
+            String strCon = "Provider=Microsoft.ACE.OLEDB.12.0;"      // プロバイダ設定
+                                                                      //= "Provider=Microsoft.Jet.OLEDB.4.0;"     // Jetでやる場合（後で検証 xlsxでも使えるのか？）
+                                + "Data Source=" + strFilePath + "; "       // ソースファイル指定
+                                + "Extended Properties=\"" + strExcelVer    // Excelファイルver指定
+                                + "HDR=" + strInHeader + ";"                // ヘッダー設定
+                                + strIMEX                                   // フィールドの型を強制的にテキスト
+                                + "\"";
+
+            OleDbConnection con = new OleDbConnection(strCon);
+            String strCmd = "SELECT * FROM [" + strSheetName + "$]";
+
+            // 読み込み
+            OleDbCommand cmd = new OleDbCommand(strCmd, con);
+            OleDbDataAdapter adp = new OleDbDataAdapter(cmd);
+            adp.Fill(dt);
+
+            return dt;
+        }
+
+
+        private void dataGridView1_BindingContextChanged(object sender, EventArgs e)
+        {
+            if (dataGridView1.DataSource == null)
+            {
+                return;
+            }
+
+            foreach (DataGridViewColumn col in dataGridView1.Columns)
+            {
+                col.HeaderCell = new DataGridViewAutoFilterColumnHeaderCell(col.HeaderCell);
+            }
+
+            //dataGridView1.AutoResizeColumns();
+        }
+               
         ///----------------------------------------------------------------------
         /// <summary>
         ///     指定のグリッドビュー行のデータを編集画面に表示する </summary>
@@ -860,80 +1099,166 @@ namespace scXlsData
 
                 if (MessageBox.Show(cData + "が選択されました。よろしいですか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
                 {
+                    lblMsg.Text = string.Empty;
                     return;
                 }
 
                 // 指定のグリッドビュー行のデータを編集画面に表示する
                 txtBuCode.Text = Utility.NulltoStr(dataGridView1[colBuCode, e.RowIndex].Value);
+                setTextboxForeColor(colBuCode, e.RowIndex, txtBuCode);
+
                 txtBuName.Text = Utility.NulltoStr(dataGridView1[colBuName, e.RowIndex].Value);
+                setTextboxForeColor(colBuName, e.RowIndex, txtBuName);
+
                 txtGou.Text = Utility.NulltoStr(dataGridView1[colGou, e.RowIndex].Value);
+                setTextboxForeColor(colGou, e.RowIndex, txtGou);
+
                 txtNewStayDate.Text = Utility.NulltoStr(dataGridView1[colNewStayDate, e.RowIndex].Value);
+                setTextboxForeColor(colNewStayDate, e.RowIndex, txtNewStayDate);
 
                 txtKaiyakuContact01.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_01, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_01, e.RowIndex, txtKaiyakuContact01);
+
                 txtKaiyakuContact02.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_02, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_02, e.RowIndex, txtKaiyakuContact02);
+
                 txtKaiyakuContact03.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_03, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_03, e.RowIndex, txtKaiyakuContact03);
+
                 txtKaiyakuContact04.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_04, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_04, e.RowIndex, txtKaiyakuContact04);
+
                 txtKaiyakuContact05.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_05, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_05, e.RowIndex, txtKaiyakuContact05);
+
                 txtKaiyakuContact06.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_06, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_06, e.RowIndex, txtKaiyakuContact06);
+
                 txtKaiyakuContact07.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_07, e.RowIndex].Value);
+                setTextboxForeColor(col_KaiyakuContact_07, e.RowIndex, txtKaiyakuContact07);
+
                 //txtKaiyakuContact08.Text = Utility.NulltoStr(dataGridView1[col_KaiyakuContact_08, e.RowIndex].Value);
 
                 txtKaiyaku01.Text = Utility.NulltoStr(dataGridView1[col_Kaiyaku_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Kaiyaku_01, e.RowIndex, txtKaiyaku01);
+
                 txtKaiyaku02.Text = Utility.NulltoStr(dataGridView1[col_Kaiyaku_02, e.RowIndex].Value);
+                setTextboxForeColor(col_Kaiyaku_02, e.RowIndex, txtKaiyaku02);
+
                 txtKaiyaku03.Text = Utility.NulltoStr(dataGridView1[col_Kaiyaku_03, e.RowIndex].Value);
+                setTextboxForeColor(col_Kaiyaku_03, e.RowIndex, txtKaiyaku03);
+
                 txtKaiyaku04.Text = Utility.NulltoStr(dataGridView1[col_Kaiyaku_04, e.RowIndex].Value);
+                setTextboxForeColor(col_Kaiyaku_04, e.RowIndex, txtKaiyaku04);
 
                 txtRoomCheck01.Text = Utility.NulltoStr(dataGridView1[col_RoomCheck_01, e.RowIndex].Value);
+                setTextboxForeColor(col_RoomCheck_01, e.RowIndex, txtRoomCheck01);
+
                 //txtRoomCheck02.Text = Utility.NulltoStr(dataGridView1[col_RoomCheck_02, e.RowIndex].Value);
+
                 txtRoomCheck03.Text = Utility.NulltoStr(dataGridView1[col_RoomCheck_03, e.RowIndex].Value);
+                setTextboxForeColor(col_RoomCheck_03, e.RowIndex, txtRoomCheck03);
+
                 //txtRoomCheck04.Text = Utility.NulltoStr(dataGridView1[col_RoomCheck_04, e.RowIndex].Value);
                 //txtRoomCheck05.Text = Utility.NulltoStr(dataGridView1[col_RoomCheck_05, e.RowIndex].Value);
 
                 txtShorui01.Text = Utility.NulltoStr(dataGridView1[col_Shorui_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Shorui_01, e.RowIndex, txtShorui01);
+
                 txtShorui02.Text = Utility.NulltoStr(dataGridView1[col_Shorui_02, e.RowIndex].Value);
+                setTextboxForeColor(col_Shorui_02, e.RowIndex, txtShorui02);
+
                 txtShorui03.Text = Utility.NulltoStr(dataGridView1[col_Shorui_03, e.RowIndex].Value);
+                setTextboxForeColor(col_Shorui_03, e.RowIndex, txtShorui03);
+
                 //txtShorui04.Text = Utility.NulltoStr(dataGridView1[col_Shorui_04, e.RowIndex].Value);
 
                 txtTetsu01.Text = Utility.NulltoStr(dataGridView1[col_Tetsu_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Tetsu_01, e.RowIndex, txtTetsu01);
+
                 txtTetsu02.Text = Utility.NulltoStr(dataGridView1[col_Tetsu_02, e.RowIndex].Value);
+                setTextboxForeColor(col_Tetsu_02, e.RowIndex, txtTetsu02);
+
                 //txtTetsu03.Text = Utility.NulltoStr(dataGridView1[col_Tetsu_03, e.RowIndex].Value);
+
                 txtTetsu04.Text = Utility.NulltoStr(dataGridView1[col_Tetsu_04, e.RowIndex].Value);
+                setTextboxForeColor(col_Tetsu_04, e.RowIndex, txtTetsu04);
+
                 txtTetsu05.Text = Utility.NulltoStr(dataGridView1[col_Tetsu_05, e.RowIndex].Value);
+                setTextboxForeColor(col_Tetsu_05, e.RowIndex, txtTetsu05);
 
                 txtHacchu01.Text = Utility.NulltoStr(dataGridView1[col_Hacchu_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Hacchu_01, e.RowIndex, txtHacchu01);
+
                 //txtHacchu02.Text = Utility.NulltoStr(dataGridView1[col_Hacchu_02, e.RowIndex].Value);
                 //txtHacchu03.Text = Utility.NulltoStr(dataGridView1[col_Hacchu_03, e.RowIndex].Value);
 
                 //txtKouji01.Text = Utility.NulltoStr(dataGridView1[col_Kouji_01, e.RowIndex].Value);
+
                 txtKouji02.Text = Utility.NulltoStr(dataGridView1[col_Kouji_02, e.RowIndex].Value);
+                setTextboxForeColor(col_Kouji_02, e.RowIndex, txtKouji02);
+
                 txtKouji03.Text = Utility.NulltoStr(dataGridView1[col_Kouji_03, e.RowIndex].Value);
+                setTextboxForeColor(col_Kouji_03, e.RowIndex, txtKouji03);
+
                 txtKouji04.Text = Utility.NulltoStr(dataGridView1[col_Kouji_04, e.RowIndex].Value);
+                setTextboxForeColor(col_Kouji_04, e.RowIndex, txtKouji04);
+
                 txtKouji05.Text = Utility.NulltoStr(dataGridView1[col_Kouji_05, e.RowIndex].Value);
+                setTextboxForeColor(col_Kouji_05, e.RowIndex, txtKouji05);
+
                 //txtKouji06.Text = Utility.NulltoStr(dataGridView1[col_Kouji_06, e.RowIndex].Value);
                 //txtKouji07.Text = Utility.NulltoStr(dataGridView1[col_Kouji_07, e.RowIndex].Value);
 
                 txtKanryo01.Text = Utility.NulltoStr(dataGridView1[col_Kanryo_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Kanryo_01, e.RowIndex, txtKanryo01);
+
                 txtKanryo02.Text = Utility.NulltoStr(dataGridView1[col_Kanryo_02, e.RowIndex].Value);
+                setTextboxForeColor(col_Kanryo_02, e.RowIndex, txtKanryo02);
+
                 txtKanryo03.Text = Utility.NulltoStr(dataGridView1[col_Kanryo_03, e.RowIndex].Value);
+                setTextboxForeColor(col_Kanryo_03, e.RowIndex, txtKanryo03);
+
                 //txtKanryo04.Text = Utility.NulltoStr(dataGridView1[col_Kanryo_04, e.RowIndex].Value);
 
                 txtSkyOne01.Text = Utility.NulltoStr(dataGridView1[col_SkyOne_01, e.RowIndex].Value);
+                setTextboxForeColor(col_SkyOne_01, e.RowIndex, txtSkyOne01);
+
                 //txtSkyOne02.Text = Utility.NulltoStr(dataGridView1[col_SkyOne_02, e.RowIndex].Value);
 
                 txtBikou.Text = Utility.NulltoStr(dataGridView1[col_Bikou_01, e.RowIndex].Value);
+                setTextboxForeColor(col_Bikou_01, e.RowIndex, txtBikou);
 
                 // 行番号
                 lblRow.Text = Utility.NulltoStr(dataGridView1[col_xlsRowNum, e.RowIndex].Value);
 
                 // 以下、コンボボックス
                 selCmbItem(cmbGyousha, col_Kouji_01, e.RowIndex);       // 業者名コンボボックス
-                selCmbItem(cmbHosho, col_SkyOne_02, e.RowIndex);        // 保証会社       
-                selCmbItem(cmbKeyOkiba, col_RoomCheck_04, e.RowIndex);  // 鍵置場
-                selCmbItem(cmbKaiyakuContact08, col_KaiyakuContact_08, e.RowIndex); // 解約申し込み担当
-                selCmbItem(cmbRoomCheck05, col_RoomCheck_05, e.RowIndex);   // ルームチェック担当
+                setComboboxForeColor(col_Kouji_01, e.RowIndex, cmbGyousha);
+
+                selCmbItem(cmbHosho, col_SkyOne_02, e.RowIndex);        // 保証会社     
+                setComboboxForeColor(col_SkyOne_02, e.RowIndex, cmbHosho);
+
+                selCmbItem(cmbKeyOkiba, col_RoomCheck_04, e.RowIndex);  // 鍵置場   
+                setComboboxForeColor(col_RoomCheck_04, e.RowIndex, cmbKeyOkiba);
+
+                selCmbItem(cmbKaiyakuContact08, col_KaiyakuContact_08, e.RowIndex); // 解約申し込み担当  
+                setComboboxForeColor(col_KaiyakuContact_08, e.RowIndex, cmbKaiyakuContact08);
+
+                selCmbItem(cmbRoomCheck05, col_RoomCheck_05, e.RowIndex);   // ルームチェック担当 
+                setComboboxForeColor(col_RoomCheck_05, e.RowIndex, cmbRoomCheck05);
+
                 selCmbItem(cmbShorui04, col_Shorui_04, e.RowIndex);     // 書類担当
+                setComboboxForeColor(col_Shorui_04, e.RowIndex, cmbShorui04);
+
                 selCmbItem(cmbHacchu03, col_Hacchu_03, e.RowIndex);     // 発注担当
+                setComboboxForeColor(col_Hacchu_03, e.RowIndex, cmbHacchu03);
+
                 selCmbItem(cmbKanryo04, col_Kanryo_04, e.RowIndex);     // 完了担当
+                setComboboxForeColor(col_Kanryo_04, e.RowIndex, cmbKanryo04);
+
+                selCmbItem(cmbKanri, col_Kanri, e.RowIndex);            // 他管：2018/12/18
+                //setComboboxForeColor(col_Kanri, e.RowIndex, cmbKanri);
 
                 button2.Enabled = true;     // 更新ボタン
                 button1.Enabled = true;     // 取消ボタン
@@ -947,13 +1272,28 @@ namespace scXlsData
                 {
                     txtBuCode.Enabled = true;
                 }
-        }
+
+                lblMsg.Text = cData + "が選択されました...";
+            }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
         }
-        
+
+        private void setTextboxForeColor(string colName, int row, TextBox textBox)
+        {
+            Color color = dataGridView1[colName, row].Style.ForeColor;
+            textBox.ForeColor = color;
+        }
+
+        private void setComboboxForeColor(string colName, int row, ComboBox cmb)
+        {
+            Color color = dataGridView1[colName, row].Style.ForeColor;
+            cmb.ForeColor = color;
+        }
+
+
         ///-----------------------------------------------------
         /// <summary>
         ///     コンボボックスアイテム表示 </summary>
@@ -988,6 +1328,7 @@ namespace scXlsData
 
         private void dispInitial()
         {
+            // テキストボックス・テキスト初期化
             txtBuCode.Text = string.Empty;
             txtBuName.Text = string.Empty;
             txtGou.Text = string.Empty;
@@ -1000,7 +1341,6 @@ namespace scXlsData
             txtKaiyakuContact05.Text = string.Empty;
             txtKaiyakuContact06.Text = string.Empty;
             txtKaiyakuContact07.Text = string.Empty;
-            //txtKaiyakuContact08.Text = string.Empty;
 
             txtKaiyaku01.Text = string.Empty;
             txtKaiyaku02.Text = string.Empty;
@@ -1010,13 +1350,10 @@ namespace scXlsData
             txtRoomCheck01.Text = string.Empty;
             txtRoomCheck02.Text = string.Empty;
             txtRoomCheck03.Text = string.Empty;
-            //txtRoomCheck04.Text = string.Empty;
-            //txtRoomCheck05.Text = string.Empty;
 
             txtShorui01.Text = string.Empty;
             txtShorui02.Text = string.Empty;
             txtShorui03.Text = string.Empty;
-            //txtShorui04.Text = string.Empty;
 
             txtTetsu01.Text = string.Empty;
             txtTetsu02.Text = string.Empty;
@@ -1026,9 +1363,7 @@ namespace scXlsData
 
             txtHacchu01.Text = string.Empty;
             txtHacchu02.Text = string.Empty;
-            //txtHacchu03.Text = string.Empty;
 
-            //txtKouji01.Text = string.Empty;
             txtKouji02.Text = string.Empty;
             txtKouji03.Text = string.Empty;
             txtKouji04.Text = string.Empty;
@@ -1039,35 +1374,84 @@ namespace scXlsData
             txtKanryo01.Text = string.Empty;
             txtKanryo02.Text = string.Empty;
             txtKanryo03.Text = string.Empty;
-            //txtKanryo04.Text = string.Empty;
 
             txtSkyOne01.Text = string.Empty;
-            //txtSkyOne02.Text = string.Empty;
 
             txtBikou.Text = string.Empty;
 
-            radioButton1.Checked = false;
-            radioButton2.Checked = true;
-
             lblRow.Text = string.Empty;
+            lblMsg.Text = string.Empty;
 
-            setCmbItems(dataGridView1, cmbGyousha, col_Kouji_01);       // 工事業者
-            setCmbItems(dataGridView1, cmbHosho, col_SkyOne_02);        // 保証会社
-            setCmbItems(dataGridView1, cmbKeyOkiba, col_RoomCheck_04);  // 鍵置場
+            setCmbItems(dataGridView1, cmbGyousha, col_Kouji_01);           // 工事業者
+            setCmbItems(dataGridView1, cmbHosho, col_SkyOne_02);            // 保証会社
+            setCmbItems(dataGridView1, cmbKeyOkiba, col_RoomCheck_04);      // 鍵置場
             setCmbItems(dataGridView1, cmbKaiyakuContact08, col_KaiyakuContact_08); // 解約申し込み担当
             setCmbItems(dataGridView1, cmbRoomCheck05, col_RoomCheck_05);   // ルームチェック担当
             setCmbItems(dataGridView1, cmbShorui04, col_Shorui_04);         // 書類担当
             setCmbItems(dataGridView1, cmbHacchu03, col_Hacchu_03);         // 発注担当
             setCmbItems(dataGridView1, cmbKanryo04, col_Kanryo_04);         // 完了担当
+            setCmbItems(dataGridView1, cmbKanri, col_Kanri);                // 管理：2018/12/18
+            cmbKanri.ForeColor = SystemColors.WindowText;
+            cmbKanri.BackColor = SystemColors.Window;
+
+            radioButton1.Checked = false;
+            radioButton2.Checked = true;
 
             button2.Enabled = false;    // 更新ボタン
             button1.Enabled = false;    // 取消ボタン
             panel1.Enabled = true;
 
-            txtsBuName.Enabled = true;
-            txtsBuName.Text = string.Empty;
 
-            //button5.Enabled = true;
+            // テキストカラー
+            txtBuCode.ForeColor = SystemColors.WindowText;
+            txtBuName.ForeColor = SystemColors.WindowText;
+            txtGou.ForeColor = SystemColors.WindowText;
+            txtNewStayDate.ForeColor = SystemColors.WindowText;
+
+            txtKaiyakuContact01.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact02.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact03.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact04.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact05.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact06.ForeColor = SystemColors.WindowText;
+            txtKaiyakuContact07.ForeColor = SystemColors.WindowText;
+
+            txtKaiyaku01.ForeColor = SystemColors.WindowText;
+            txtKaiyaku02.ForeColor = SystemColors.WindowText;
+            txtKaiyaku03.ForeColor = SystemColors.WindowText;
+            txtKaiyaku04.ForeColor = SystemColors.WindowText;
+
+            txtRoomCheck01.ForeColor = SystemColors.WindowText;
+            txtRoomCheck02.ForeColor = SystemColors.WindowText;
+            txtRoomCheck03.ForeColor = SystemColors.WindowText;
+
+            txtShorui01.ForeColor = SystemColors.WindowText;
+            txtShorui02.ForeColor = SystemColors.WindowText;
+            txtShorui03.ForeColor = SystemColors.WindowText;
+
+            txtTetsu01.ForeColor = SystemColors.WindowText;
+            txtTetsu02.ForeColor = SystemColors.WindowText;
+            txtTetsu03.ForeColor = SystemColors.WindowText;
+            txtTetsu04.ForeColor = SystemColors.WindowText;
+            txtTetsu05.ForeColor = SystemColors.WindowText;
+
+            txtHacchu01.ForeColor = SystemColors.WindowText;
+            txtHacchu02.ForeColor = SystemColors.WindowText;
+
+            txtKouji02.ForeColor = SystemColors.WindowText;
+            txtKouji03.ForeColor = SystemColors.WindowText;
+            txtKouji04.ForeColor = SystemColors.WindowText;
+            txtKouji05.ForeColor = SystemColors.WindowText;
+            txtKouji06.ForeColor = SystemColors.WindowText;
+            txtKouji07.ForeColor = SystemColors.WindowText;
+
+            txtKanryo01.ForeColor = SystemColors.WindowText;
+            txtKanryo02.ForeColor = SystemColors.WindowText;
+            txtKanryo03.ForeColor = SystemColors.WindowText;
+
+            txtSkyOne01.ForeColor = SystemColors.WindowText;
+
+            txtBikou.ForeColor = SystemColors.WindowText;
 
             dataGridView1.CurrentCell = null;
         }
@@ -1108,23 +1492,39 @@ namespace scXlsData
                     }
                 }
 
-                // 新規登録
-                addDataGrid(dataGridView1);
+                Cursor = Cursors.WaitCursor;
 
+                // 新規登録
+                addDataRow();
+
+                // テキストボックス色情報配列に格納
+                textBoxFontColortoArray(maxRow);
+
+                // 表示色更新
+                setGridviewFontColor(dataGridView1, colorArrays);
+
+                // データグリッドビューカレントセル
                 dataGridView1.CurrentCell = dataGridView1[1, dataGridView1.RowCount - 1];
                 dataGridView1.CurrentCell = null;
-
-                // 画面初期化
-                dispInitial();
             }
             else
             {
-                // dataGridView 更新
-                updateFlg(dataGridView1, Utility.StrtoInt(lblRow.Text));
+                Cursor = Cursors.WaitCursor;
 
-                // 画面初期化
-                dispInitial();
+                // データテーブル更新
+                updateDataRow(Utility.StrtoInt(lblRow.Text));
+
+                // テキストボックス色情報配列に格納
+                textBoxFontColortoArray(Utility.StrtoInt(Utility.NulltoStr(lblRow.Text)));
+
+                // 表示色更新
+                setGridviewFontColor(dataGridView1, colorArrays);
             }
+
+            // 画面初期化
+            dispInitial();
+
+            Cursor = Cursors.Default;
         }
 
         ///----------------------------------------------------------
@@ -1156,6 +1556,14 @@ namespace scXlsData
             // データグリッドビューに追加登録
             dg.Rows.Add();
             dataGridUpdate(dg, dg.RowCount - 1, addFlg);
+        }
+
+        private void addDataRow()
+        {
+            // データテーブルに追加登録 : 2018/12/10
+            DataRow dt = dTbl.NewRow();
+            dt = dataTableUpdate(dt, addFlg);
+            dTbl.Rows.Add(dt);
 
             uCnt++; // 更新数カウント
         }
@@ -1174,6 +1582,118 @@ namespace scXlsData
                     break;
                 }
             }
+        }
+
+        private void updateColor(DataGridView dg, int rNum)
+        {
+            for (int i = 0; i < dg.RowCount; i++)
+            {
+                if (Utility.StrtoInt(Utility.NulltoStr(dg[col_xlsRowNum, i].Value)) == rNum)
+                {
+                    // データグリッドビュー更新
+                    dataGridColorUpdate(dataGridView1, i);
+                    break;
+                }
+            }
+        }
+
+        private void updateDataRow(int rNum)
+        {
+            // データテーブル更新：2018/12/10
+            DataRow drow = dTbl.Rows.Find(rNum);
+            dataTableUpdate(drow, upFlg);
+
+            // 更新数カウント
+            uCnt++;
+        }
+
+        ///--------------------------------------------------------------
+        /// <summary>
+        ///     データテーブルのデータを更新する </summary>
+        /// <param name="dt">
+        ///     データテーブルオブジェクト</param>
+        /// <param name="uFlg">
+        ///     更新フラグ</param>
+        ///--------------------------------------------------------------
+        private DataRow dataTableUpdate(DataRow dt, string uFlg)
+        {
+            dt[col_Kanri] = Utility.NulltoStr(cmbKanri.Text);   // 他管：2018/12/18
+            dt[colBuCode] = txtBuCode.Text;
+            dt[colBuName] = txtBuName.Text;
+            dt[colGou] = txtGou.Text;
+
+            dt[colNewStayDate] = txtNewStayDate.Text;
+
+            dt[col_KaiyakuContact_01] = txtKaiyakuContact01.Text;
+            dt[col_KaiyakuContact_02] = txtKaiyakuContact02.Text;
+            dt[col_KaiyakuContact_03] = txtKaiyakuContact03.Text;
+            dt[col_KaiyakuContact_04] = txtKaiyakuContact04.Text;
+            dt[col_KaiyakuContact_05] = txtKaiyakuContact05.Text;
+            dt[col_KaiyakuContact_06] = txtKaiyakuContact06.Text;
+            dt[col_KaiyakuContact_07] = txtKaiyakuContact07.Text;
+            //dt[col_KaiyakuContact_08, i].Value = txtKaiyakuContact08.Text;
+            dt[col_KaiyakuContact_08] = Utility.NulltoStr(cmbKaiyakuContact08.Text);
+
+            dt[col_Kaiyaku_01] = txtKaiyaku01.Text;
+            dt[col_Kaiyaku_02] = txtKaiyaku02.Text;
+            dt[col_Kaiyaku_03] = txtKaiyaku03.Text;
+            dt[col_Kaiyaku_04] = txtKaiyaku04.Text;
+
+            dt[col_RoomCheck_01] = txtRoomCheck01.Text;
+            dt[col_RoomCheck_02] = txtRoomCheck02.Text;
+            dt[col_RoomCheck_03] = txtRoomCheck03.Text;
+            //dt[col_RoomCheck_04, i].Value = txtRoomCheck04.Text;
+            dt[col_RoomCheck_04] = Utility.NulltoStr(cmbKeyOkiba.Text);
+            //dt[col_RoomCheck_05, i].Value = txtRoomCheck05.Text;
+            dt[col_RoomCheck_05] = Utility.NulltoStr(cmbRoomCheck05.Text);
+
+            dt[col_Shorui_01] = txtShorui01.Text;
+            dt[col_Shorui_02] = txtShorui02.Text;
+            dt[col_Shorui_03] = txtShorui03.Text;
+            //dt[col_Shorui_04, i].Value = txtShorui04.Text;
+            dt[col_Shorui_04] = Utility.NulltoStr(cmbShorui04.Text);
+
+            dt[col_Tetsu_01] = txtTetsu01.Text;
+            dt[col_Tetsu_02] = txtTetsu02.Text;
+            dt[col_Tetsu_03] = txtTetsu03.Text;
+            dt[col_Tetsu_04] = txtTetsu04.Text;
+            dt[col_Tetsu_05] = txtTetsu05.Text;
+
+            dt[col_Hacchu_01] = txtHacchu01.Text;
+            dt[col_Hacchu_02] = txtHacchu02.Text;
+            //dt[col_Hacchu_03, i].Value = txtHacchu03.Text;
+            dt[col_Hacchu_03] = Utility.NulltoStr(cmbHacchu03.Text);
+
+            //dt[col_Kouji_01, i].Value = txtKouji01.Text;
+            dt[col_Kouji_01] = Utility.NulltoStr(cmbGyousha.Text);
+            dt[col_Kouji_02] = txtKouji02.Text;
+            dt[col_Kouji_03] = txtKouji03.Text;
+            dt[col_Kouji_04] = txtKouji04.Text;
+            dt[col_Kouji_05] = txtKouji05.Text;
+            dt[col_Kouji_06] = txtKouji06.Text;
+            dt[col_Kouji_07] = txtKouji07.Text;
+
+            dt[col_Kanryo_01] = txtKanryo01.Text;
+            dt[col_Kanryo_02] = txtKanryo02.Text;
+            dt[col_Kanryo_03] = txtKanryo03.Text;
+            //dt[col_Kanryo_04, i].Value = txtKanryo04.Text;
+            dt[col_Kanryo_04] = Utility.NulltoStr(cmbKanryo04.Text);
+
+            dt[col_Bikou_01] = txtBikou.Text;
+
+            dt[col_SkyOne_01] = txtSkyOne01.Text;
+            //dt[col_SkyOne_02, i].Value = txtSkyOne02.Text;
+            dt[col_SkyOne_02] = Utility.NulltoStr(cmbHosho.Text);
+
+            if (uFlg == addFlg)
+            {
+                maxRow++;
+                dt[col_xlsRowNum] = maxRow;
+            }
+
+            dt[col_upFlg] = uFlg;
+
+            return dt;
         }
 
         ///--------------------------------------------------------------
@@ -1256,6 +1776,76 @@ namespace scXlsData
             dg[col_SkyOne_02, i].Value = Utility.NulltoStr(cmbHosho.Text);
 
             dg[col_upFlg, i].Value = uFlg;
+        }
+
+        ///--------------------------------------------------------------
+        /// <summary>
+        ///     データグリッドビューの文字色を更新する </summary>
+        /// <param name="dg">
+        ///     データグリッドビューオブジェクト</param>
+        /// <param name="i">
+        ///     rowIndex</param>
+        ///--------------------------------------------------------------
+        private void dataGridColorUpdate(DataGridView dg, int i)
+        {
+            dg[colBuCode, i].Style.ForeColor = txtBuCode.ForeColor;
+            dg[colBuName, i].Style.ForeColor = txtBuName.ForeColor;
+            dg[colGou, i].Style.ForeColor = txtGou.ForeColor;
+
+            dg[colNewStayDate, i].Style.ForeColor = txtNewStayDate.ForeColor;
+
+            dg[col_KaiyakuContact_01, i].Style.ForeColor = txtKaiyakuContact01.ForeColor;
+            dg[col_KaiyakuContact_02, i].Style.ForeColor = txtKaiyakuContact02.ForeColor;
+            dg[col_KaiyakuContact_03, i].Style.ForeColor = txtKaiyakuContact03.ForeColor;
+            dg[col_KaiyakuContact_04, i].Style.ForeColor = txtKaiyakuContact04.ForeColor;
+            dg[col_KaiyakuContact_05, i].Style.ForeColor = txtKaiyakuContact05.ForeColor;
+            dg[col_KaiyakuContact_06, i].Style.ForeColor = txtKaiyakuContact06.ForeColor;
+            dg[col_KaiyakuContact_07, i].Style.ForeColor = txtKaiyakuContact07.ForeColor;
+            dg[col_KaiyakuContact_08, i].Style.ForeColor = cmbKaiyakuContact08.ForeColor;
+
+            dg[col_Kaiyaku_01, i].Style.ForeColor = txtKaiyaku01.ForeColor;
+            dg[col_Kaiyaku_02, i].Style.ForeColor = txtKaiyaku02.ForeColor;
+            dg[col_Kaiyaku_03, i].Style.ForeColor = txtKaiyaku03.ForeColor;
+            dg[col_Kaiyaku_04, i].Style.ForeColor = txtKaiyaku04.ForeColor;
+
+            dg[col_RoomCheck_01, i].Style.ForeColor = txtRoomCheck01.ForeColor;
+            dg[col_RoomCheck_02, i].Style.ForeColor = txtRoomCheck02.ForeColor;
+            dg[col_RoomCheck_03, i].Style.ForeColor = txtRoomCheck03.ForeColor;
+            dg[col_RoomCheck_04, i].Style.ForeColor = cmbKeyOkiba.ForeColor;
+            dg[col_RoomCheck_05, i].Style.ForeColor = cmbRoomCheck05.ForeColor;
+
+            dg[col_Shorui_01, i].Style.ForeColor = txtShorui01.ForeColor;
+            dg[col_Shorui_02, i].Style.ForeColor = txtShorui02.ForeColor;
+            dg[col_Shorui_03, i].Style.ForeColor = txtShorui03.ForeColor;
+            dg[col_Shorui_04, i].Style.ForeColor = cmbShorui04.ForeColor;
+
+            dg[col_Tetsu_01, i].Style.ForeColor = txtTetsu01.ForeColor;
+            dg[col_Tetsu_02, i].Style.ForeColor = txtTetsu02.ForeColor;
+            dg[col_Tetsu_03, i].Style.ForeColor = txtTetsu03.ForeColor;
+            dg[col_Tetsu_04, i].Style.ForeColor = txtTetsu04.ForeColor;
+            dg[col_Tetsu_05, i].Style.ForeColor = txtTetsu05.ForeColor;
+
+            dg[col_Hacchu_01, i].Style.ForeColor = txtHacchu01.ForeColor;
+            dg[col_Hacchu_02, i].Style.ForeColor = txtHacchu02.ForeColor;
+            dg[col_Hacchu_03, i].Style.ForeColor = cmbHacchu03.ForeColor;
+
+            dg[col_Kouji_01, i].Style.ForeColor = cmbGyousha.ForeColor;
+            dg[col_Kouji_02, i].Style.ForeColor = txtKouji02.ForeColor;
+            dg[col_Kouji_03, i].Style.ForeColor = txtKouji03.ForeColor;
+            dg[col_Kouji_04, i].Style.ForeColor = txtKouji04.ForeColor;
+            dg[col_Kouji_05, i].Style.ForeColor = txtKouji05.ForeColor;
+            dg[col_Kouji_06, i].Style.ForeColor = txtKouji06.ForeColor;
+            dg[col_Kouji_07, i].Style.ForeColor = txtKouji07.ForeColor;
+
+            dg[col_Kanryo_01, i].Style.ForeColor = txtKanryo01.ForeColor;
+            dg[col_Kanryo_02, i].Style.ForeColor = txtKanryo02.ForeColor;
+            dg[col_Kanryo_03, i].Style.ForeColor = txtKanryo03.ForeColor;
+            dg[col_Kanryo_04, i].Style.ForeColor = cmbKanryo04.ForeColor;
+
+            dg[col_Bikou_01, i].Style.ForeColor = txtBikou.ForeColor;
+
+            dg[col_SkyOne_01, i].Style.ForeColor = txtSkyOne01.ForeColor;
+            dg[col_SkyOne_02, i].Style.ForeColor = cmbHosho.ForeColor;
         }
 
         ///---------------------------------------------------------------------
@@ -1365,6 +1955,158 @@ namespace scXlsData
             }
         }
 
+        ///---------------------------------------------------------------------
+        /// <summary>
+        ///     エクセルシート更新 </summary>
+        /// <param name="dg">
+        ///     データグリッドビューオブジェクト</param>
+        /// <param name="sFile">
+        ///     対象エクセルファイル</param>
+        /// <param name="rPass">
+        ///     読み込みパスワード</param>
+        /// <param name="wPass">
+        ///     書き込みパスワード</param>
+        ///---------------------------------------------------------------------
+        private void excelUpdateFromDataTable(DataTable dt, string sFile, string rPass, string wPass, clsColor[] colors)
+        {
+            bool uStatus = false;
+
+            int uCnt = 0;
+            Cursor = Cursors.WaitCursor;
+
+            string sPath = System.IO.Path.GetDirectoryName(sFile);
+
+            //LOCKファイル作成
+            Utility.makeLockFile(sPath, System.Net.Dns.GetHostName());
+
+            // 対象エクセルファイルのパスワードを解除する
+            impXlsSheet(sFile, rPass, wPass);
+
+            // ブック取得
+            using (var bk = new XLWorkbook(sFile, XLEventTracking.Disabled))
+            {
+                var sheet1 = bk.Worksheet(Properties.Settings.Default.xlsSheetName);
+
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    DataRow dr = dt.Rows[i];
+
+                    // Excel行更新処理
+                    if (Utility.NulltoStr(dr[col_upFlg]) == upFlg)
+                    {
+                        int bCode = Utility.StrtoInt(Utility.NulltoStr(dr[colBuCode]));
+                        int rowNum = Utility.StrtoInt(Utility.NulltoStr(dr[col_xlsRowNum]));
+
+                        // 対象行を取得
+                        var row = sheet1.Row(rowNum);
+
+                        if (Utility.StrtoInt(Utility.NulltoStr(row.Cell(2).Value)) == bCode)
+                        {
+                            // データテーブルの物件ＣＤが一致したら更新
+                            setXlsRowData(row, dr);
+
+                            // 文字色を反映
+                            setXlsFontColor(sheet1, dr, rowNum, colorArrays);
+
+                            uCnt++;
+                            uStatus = true;
+                        }
+
+                    }
+                    else if (Utility.NulltoStr(dr[col_upFlg]) == addFlg)
+                    {
+                        // Excel行追加処理
+                        var tbl = sheet1.RangeUsed().AsTable();
+                        var row = sheet1.Row(tbl.RowCount());
+
+                        // 現最下行の新規入居開始日セルの下罫線を変更
+                        row.Cell(5).Style.Border.SetBottomBorder(XLBorderStyleValues.None);
+                        row.Cell(5).Style.Border.SetBottomBorder(XLBorderStyleValues.Thin);
+
+                        // 追加行
+                        row = sheet1.Row(tbl.RowCount() + 1);
+                        row.Height = 50.25;
+
+                        // 追加行罫線を引く
+                        sheet1.Range(row.Cell(1), row.Cell(tbl.ColumnCount())).Style
+                            .Border.SetTopBorder(XLBorderStyleValues.Thin)
+                            .Border.SetBottomBorder(XLBorderStyleValues.Thin)
+                            .Border.SetLeftBorder(XLBorderStyleValues.Thin)
+                            .Border.SetRightBorder(XLBorderStyleValues.Thin);
+
+                        // 追加行書式設定
+                        xlsNewRowStyleSet(sheet1, row, tbl.ColumnCount());
+
+                        // 物件ＣＤ
+                        row.Cell(2).Value = Utility.NulltoStr(dr[colBuCode]);
+
+                        // データテーブルの物件ＣＤ以外の項目セット
+                        setXlsRowData(row, dr);
+
+                        // 文字色を反映
+                        setXlsFontColor(sheet1, dr, row.RowNumber(), colorArrays);
+
+                        uCnt++;
+                        uStatus = true;
+                    }
+                }
+
+                // 更新
+                if (uStatus)
+                {
+                    bk.SaveAs(sFile);
+                }
+            }
+
+            // 対象エクセルファイルのパスワード付きで書き込み
+            impXlsSheet(sFile, wPass, rPass);
+
+            // Lockファイル削除
+            Utility.deleteLockFile(sPath, System.Net.Dns.GetHostName());
+
+            Cursor = Cursors.Default;
+
+            if (uStatus)
+            {
+                MessageBox.Show(uCnt + "件、更新しました", "確認", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+
+        ///---------------------------------------------------------------
+        /// <summary>
+        ///     エクセルシートのセルに色をセットする </summary>
+        /// <param name="worksheet">
+        ///     ワークシートオブジェクト</param>
+        /// <param name="dr">
+        ///     dataRow</param>
+        /// <param name="rNum">
+        ///     行ナンバー</param>
+        /// <param name="colors">
+        ///     カラー情報配列</param>
+        ///---------------------------------------------------------------
+        private void setXlsFontColor(IXLWorksheet worksheet, DataRow dr, int rNum, clsColor[] colors)
+        {
+            if (colors == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < colors.Length; i++)
+            {
+                if (Utility.StrtoInt(Utility.NulltoStr(dr[col_xlsRowNum])) == colors[i].cRow)
+                {
+                    if (colors[i].cColor != Color.Empty)
+                    {
+                        XLColor xLColor = XLColor.FromColor(colors[i].cColor);
+
+                        var row = worksheet.Row(rNum);
+                        row.Cell(colors[i].cColumn + 1).Style.Font.FontColor = xLColor;
+                    }
+                }
+            }
+        }
+
+
         ///--------------------------------------------------------------
         /// <summary>
         ///     新規登録行数式登録 </summary>
@@ -1385,41 +2127,41 @@ namespace scXlsData
                     .Font.SetFontSize(12);
 
                 // 物件名、業者名
-                if (i == 2 || i == 34)
+                if (i == 3 || i == 35)
                 {
                     row.Cell(i).Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Left);
                 }
 
                 // 表示形式：月日
-                if (i == 4 || i == 5 || i == 6 || i == 7 || i == 8 || i == 10 || i == 11 ||
-                    i == 13 || i == 14 || i == 16 || i == 17 || i == 19 || i == 22 || 
-                    i == 23 || i == 24 || i == 26 || i == 27 || i == 29 || i == 30 || i == 31 || 
-                    i == 36 || i == 37 || i == 38 || i == 41 || i == 42 || i == 43)
+                if (i == 5 || i == 6 || i == 7 || i == 8 || i == 9 || i == 11 || i == 12 ||
+                    i == 14 || i == 15 || i == 17 || i == 18 || i == 20 || i == 23 || 
+                    i == 24 || i == 25 || i == 27 || i == 28 || i == 30 || i == 31 || i == 32 ||
+                    i == 37 || i == 38 || i == 39 || i == 42 || i == 43 || i == 44)
                 {
                     row.Cell(i).Style.NumberFormat.SetFormat("m/d");
                 }
 
                 // 立会時間　表示形式：時分
-                if (i == 9)
+                if (i == 10)
                 {
                     row.Cell(i).Style.NumberFormat.SetFormat("HH:mm");
                 }
 
                 // 工事代発注金額、スカイワン・金額
-                if (i == 35 || i == 46)
+                if (i == 36 || i == 47)
                 {
                     row.Cell(i).Style.NumberFormat.SetFormat("¥#,##0");
                 }
 
                 // 担当・背景色と右罫線
-                if (i == 12 || i == 21 || i ==25 || i == 33 || i == 44)
+                if (i == 13 || i == 22 || i == 26 || i == 34 || i == 45)
                 {
                     row.Cell(i).Style.Fill.BackgroundColor = XLColor.LightGray;
                     row.Cell(i).Style.Border.RightBorder = XLBorderStyleValues.Medium;
                 }
 
                 // 新規入居開始日
-                if (i == 4)
+                if (i == 5)
                 {
                     // 赤の罫線
                     row.Cell(i).Style.Border.BottomBorder = XLBorderStyleValues.Thick;
@@ -1436,22 +2178,22 @@ namespace scXlsData
                     row.Cell(i).Style.Alignment.WrapText = true;
                 }
 
-                if (i == 45 || i == 47)
+                if (i == 46 || i == 48)
                 {
                     row.Cell(i).Style.Border.RightBorder = XLBorderStyleValues.Medium;
                 }
 
                 // RC依頼からルームチェックまで
-                if (i == 18)
+                if (i == 19)
                 {
                     // 日数計算：数式
-                    string formula = "=IF(AND(ISNUMBER(Q" + row.RowNumber() + "), ISNUMBER(P" + row.RowNumber() + ")), Q" + row.RowNumber() + " - P" + row.RowNumber() + ", " + @"""" + @"""" + ")";
+                    string formula = "=IF(AND(ISNUMBER(R" + row.RowNumber() + "), ISNUMBER(Q" + row.RowNumber() + ")), R" + row.RowNumber() + " - Q" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
                     if (xlsJyokenFormat == 1)
                     {
                         // 条件付き書式を追加
-                        var cell1 = sheet.Cell("R6");
+                        var cell1 = sheet.Cell("S6");
                         var cell2 = row.Cell(i);
                         IXLRange xLRange = sheet.Range(cell1, cell2);
 
@@ -1478,16 +2220,16 @@ namespace scXlsData
                 }
 
                 // 見積書送付から本日まで
-                if (i == 28)
+                if (i == 29)
                 {
                     // 日数計算：数式
-                    string formula = "=IF(ISNUMBER(AA" + row.RowNumber() + "), TODAY()- AA" + row.RowNumber() + ", " + @"""" + @"""" + ")";
+                    string formula = "=IF(ISNUMBER(AB" + row.RowNumber() + "), TODAY()- AB" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
                     if (xlsJyokenFormat == 1)
                     {
                         // 条件付き書式を追加
-                        var cell1 = sheet.Cell("AB6");
+                        var cell1 = sheet.Cell("AC6");
                         var cell2 = row.Cell(i);
                         IXLRange xLRange = sheet.Range(cell1, cell2);
 
@@ -1514,16 +2256,16 @@ namespace scXlsData
                 }
 
                 // ルームチェックから発注までの日数計算：数式
-                if (i == 32)
+                if (i == 33)
                 {
-                    string formula = "=IF(AND(ISNUMBER(AE" + row.RowNumber() + "), ISNUMBER(Q" + row.RowNumber() + ")), AE" + row.RowNumber() + " - Q" + row.RowNumber() + ", " + @"""" + @"""" + ")";
+                    string formula = "=IF(AND(ISNUMBER(AF" + row.RowNumber() + "), ISNUMBER(R" + row.RowNumber() + ")), AF" + row.RowNumber() + " - R" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
                     if (xlsJyokenFormat == 1)
                     {
 
                         // 条件付き書式を追加
-                        var cell1 = sheet.Cell("AF6");
+                        var cell1 = sheet.Cell("AG6");
                         var cell2 = row.Cell(i);
                         IXLRange xLRange = sheet.Range(cell1, cell2);
 
@@ -1550,15 +2292,15 @@ namespace scXlsData
                 }
 
                 // 発注から工事終了までの日数計算：数式
-                if (i == 39)
+                if (i == 40)
                 {
-                    string formula = "=IF(AND(ISNUMBER(AL" + row.RowNumber() + "), ISNUMBER(AE" + row.RowNumber() + ")), AL" + row.RowNumber() + " - AE" + row.RowNumber() + ", " + @"""" + @"""" + ")";
+                    string formula = "=IF(AND(ISNUMBER(AM" + row.RowNumber() + "), ISNUMBER(AF" + row.RowNumber() + ")), AM" + row.RowNumber() + " - AF" + row.RowNumber() + ", " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
                     if (xlsJyokenFormat == 1)
                     {
                         // 条件付き書式を追加
-                        var cell1 = sheet.Cell("AM6");
+                        var cell1 = sheet.Cell("AN6");
                         var cell2 = row.Cell(i);
                         IXLRange xLRange = sheet.Range(cell1, cell2);
 
@@ -1585,15 +2327,15 @@ namespace scXlsData
                 }
 
                 // RC依頼から工事終了までの日数計算：数式
-                if (i == 40)
+                if (i == 41)
                 {
-                    string formula = "=IF(AND(ISNUMBER(AL" + row.RowNumber() + "), ISNUMBER(P" + row.RowNumber() + ")), AL" + row.RowNumber() + " - P" + row.RowNumber() + " + 1, " + @"""" + @"""" + ")";
+                    string formula = "=IF(AND(ISNUMBER(AM" + row.RowNumber() + "), ISNUMBER(Q" + row.RowNumber() + ")), AM" + row.RowNumber() + " - Q" + row.RowNumber() + " + 1, " + @"""" + @"""" + ")";
                     row.Cell(i).FormulaA1 = formula;
 
                     if (xlsJyokenFormat == 1)
                     {
                         // 条件付き書式を追加
-                        var cell1 = sheet.Cell("AN6");
+                        var cell1 = sheet.Cell("AO6");
                         var cell2 = row.Cell(i);
                         IXLRange xLRange = sheet.Range(cell1, cell2);
 
@@ -1692,7 +2434,227 @@ namespace scXlsData
             row.Cell(47).Value = Utility.NulltoStr(dg[col_SkyOne_02, i].Value);
         }
 
+        ///--------------------------------------------------------------------
+        /// <summary>
+        ///     グリッドビューセルの黒以外のフォント色のセルを取得する </summary>
+        /// <param name="dg">
+        ///     データグリッドビューオブジェクト</param>
+        ///--------------------------------------------------------------------
+        private void getGridFontColor(DataGridView dg)
+        {
+            colorArrays = null;
 
+            for (int i = 0; i < dg.RowCount; i++)
+            {
+                string flg = (Utility.NulltoStr(dg[col_upFlg, i].Value));
+
+                // 変更または追加行を対象
+                if (flg == upFlg || flg == addFlg)
+                {
+                    for (int iC = 0; iC < dg.ColumnCount; iC++)
+                    {
+                        if (Utility.NulltoStr(dg[iC, i].Value) == string.Empty)
+                        {
+                            continue;
+                        }
+
+                        // Black以外
+                        if (dg[iC, i].Style.ForeColor.Name != "Black" &&
+                            dg[iC, i].Style.ForeColor.Name != "WindowText" &&
+                            dg[iC, i].Style.ForeColor.Name != "0")
+                        {
+                            if (colorArrays == null)
+                            {
+                                Array.Resize(ref colorArrays, 1);
+                            }
+                            else
+                            {
+                                Array.Resize(ref colorArrays, colorArrays.Length + 1);
+                            }
+
+                            colorArrays[colorArrays.Length - 1] = new clsColor();
+                            colorArrays[colorArrays.Length - 1].cColor = dg[iC, i].Style.ForeColor;
+                            colorArrays[colorArrays.Length - 1].cRow = Utility.StrtoInt(Utility.NulltoStr(dg[col_xlsRowNum, i].Value));
+                            colorArrays[colorArrays.Length - 1].cColumn = iC + 1;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        ///--------------------------------------------------------------------
+        /// <summary>
+        ///     追加、変更情報のフォント色を配列にセットする </summary>
+        /// <param name="obj">
+        ///     テキストボックス</param>
+        ///--------------------------------------------------------------------
+        private void textBoxFontColortoArray(int row)
+        {
+            //colorArrays = null;
+
+            Cursor = Cursors.WaitCursor;
+
+            foreach (Control obj in panel2.Controls)
+            {
+                if (obj is TextBoxBase)
+                {
+                    if (Utility.NulltoStr(obj) == string.Empty)
+                    {
+                        continue;
+                    }
+
+                    if (colorArrays == null)
+                    {
+                        Array.Resize(ref colorArrays, 1);
+                    }
+                    else
+                    {
+                        Array.Resize(ref colorArrays, colorArrays.Length + 1);
+                    }
+
+                    colorArrays[colorArrays.Length - 1] = new clsColor();
+
+                    colorArrays[colorArrays.Length - 1].cColor = Color.FromArgb(obj.ForeColor.ToArgb());
+                    colorArrays[colorArrays.Length - 1].bColor = Color.Empty;
+                    colorArrays[colorArrays.Length - 1].cRow = row;
+
+                    if (obj.Name == "txtBuCode") colorArrays[colorArrays.Length - 1].cColumn = 1;
+                    if (obj.Name == "txtBuName") colorArrays[colorArrays.Length - 1].cColumn = 2;
+                    if (obj.Name == "txtGou") colorArrays[colorArrays.Length - 1].cColumn = 3;
+                    if (obj.Name == "txtNewStayDate") colorArrays[colorArrays.Length - 1].cColumn = 4;
+
+                    if (obj.Name == "txtKaiyakuContact01") colorArrays[colorArrays.Length - 1].cColumn = 5;
+                    if (obj.Name == "txtKaiyakuContact02") colorArrays[colorArrays.Length - 1].cColumn = 6;
+                    if (obj.Name == "txtKaiyakuContact03") colorArrays[colorArrays.Length - 1].cColumn = 7;
+                    if (obj.Name == "txtKaiyakuContact04") colorArrays[colorArrays.Length - 1].cColumn = 8;
+                    if (obj.Name == "txtKaiyakuContact05") colorArrays[colorArrays.Length - 1].cColumn = 9;
+                    if (obj.Name == "txtKaiyakuContact06") colorArrays[colorArrays.Length - 1].cColumn = 10;
+                    if (obj.Name == "txtKaiyakuContact07") colorArrays[colorArrays.Length - 1].cColumn = 11;
+
+                    if (obj.Name == "txtKaiyaku01") colorArrays[colorArrays.Length - 1].cColumn = 13;
+                    if (obj.Name == "txtKaiyaku02") colorArrays[colorArrays.Length - 1].cColumn = 14;
+                    if (obj.Name == "txtKaiyaku03") colorArrays[colorArrays.Length - 1].cColumn = 15;
+                    if (obj.Name == "txtKaiyaku04") colorArrays[colorArrays.Length - 1].cColumn = 16;
+
+                    if (obj.Name == "txtRoomCheck01") colorArrays[colorArrays.Length - 1].cColumn = 17;
+                    if (obj.Name == "txtRoomCheck02") colorArrays[colorArrays.Length - 1].cColumn = 18;
+                    if (obj.Name == "txtRoomCheck03") colorArrays[colorArrays.Length - 1].cColumn = 19;
+
+                    if (obj.Name == "txtShorui01") colorArrays[colorArrays.Length - 1].cColumn = 22;
+                    if (obj.Name == "txtShorui02") colorArrays[colorArrays.Length - 1].cColumn = 23;
+                    if (obj.Name == "txtShorui03") colorArrays[colorArrays.Length - 1].cColumn = 24;
+
+                    if (obj.Name == "txtTetsu01") colorArrays[colorArrays.Length - 1].cColumn = 26;
+                    if (obj.Name == "txtTetsu02") colorArrays[colorArrays.Length - 1].cColumn = 27;
+                    if (obj.Name == "txtTetsu03") colorArrays[colorArrays.Length - 1].cColumn = 28;
+                    if (obj.Name == "txtTetsu04") colorArrays[colorArrays.Length - 1].cColumn = 29;
+                    if (obj.Name == "txtTetsu05") colorArrays[colorArrays.Length - 1].cColumn = 30;
+
+                    if (obj.Name == "txtHacchu01") colorArrays[colorArrays.Length - 1].cColumn = 31;
+                    if (obj.Name == "txtHacchu02") colorArrays[colorArrays.Length - 1].cColumn = 32;
+
+                    if (obj.Name == "txtKouji02") colorArrays[colorArrays.Length - 1].cColumn = 35;
+                    if (obj.Name == "txtKouji03") colorArrays[colorArrays.Length - 1].cColumn = 36;
+                    if (obj.Name == "txtKouji04") colorArrays[colorArrays.Length - 1].cColumn = 37;
+                    if (obj.Name == "txtKouji05") colorArrays[colorArrays.Length - 1].cColumn = 38;
+                    if (obj.Name == "txtKouji06") colorArrays[colorArrays.Length - 1].cColumn = 39;
+                    if (obj.Name == "txtKouji07") colorArrays[colorArrays.Length - 1].cColumn = 40;
+
+                    if (obj.Name == "txtKanryo01") colorArrays[colorArrays.Length - 1].cColumn = 41;
+                    if (obj.Name == "txtKanryo02") colorArrays[colorArrays.Length - 1].cColumn = 42;
+                    if (obj.Name == "txtKanryo03") colorArrays[colorArrays.Length - 1].cColumn = 43;
+
+                    if (obj.Name == "txtBikou") colorArrays[colorArrays.Length - 1].cColumn = 45;
+
+                    if (obj.Name == "txtSkyOne01") colorArrays[colorArrays.Length - 1].cColumn = 46;
+                }
+            }
+
+            Cursor = Cursors.Default;
+        }
+
+        ///--------------------------------------------------------------------
+        /// <summary>
+        ///     エクセルのセルにデータをセットする </summary>
+        /// <param name="row">
+        ///     エクセル行</param>
+        /// <param name="dg">
+        ///     データテーブルオブジェクト</param>
+        ///--------------------------------------------------------------------
+        private void setXlsRowData(IXLRow row, DataRow dr)
+        {
+            row.Cell(1).Value = Utility.NulltoStr(dr[col_Kanri]);   // 他管：2018/12/18
+
+            // 他管のときの背景色と文字色：2018/12/18
+            if (Utility.NulltoStr(dr[col_Kanri]) == TAKAN)
+            {
+                row.Cell(1).Style.Fill.BackgroundColor = XLColor.Red;
+                row.Cell(1).Style.Font.FontColor = XLColor.White;
+            }
+            else
+            {
+                row.Cell(1).Style.Fill.BackgroundColor = XLColor.White;
+                row.Cell(1).Style.Font.FontColor = XLColor.Black;
+            }
+
+            row.Cell(3).Value = Utility.NulltoStr(dr[colBuName]);
+            row.Cell(4).Value = Utility.NulltoStr(dr[colGou]);
+            row.Cell(5).Value = Utility.NulltoStr(dr[colNewStayDate]);
+
+            row.Cell(6).Value = Utility.NulltoStr(dr[col_KaiyakuContact_01]);
+            row.Cell(7).Value = Utility.NulltoStr(dr[col_KaiyakuContact_02]);
+            row.Cell(8).Value = Utility.NulltoStr(dr[col_KaiyakuContact_03]);
+            row.Cell(9).Value = Utility.NulltoStr(dr[col_KaiyakuContact_04]);
+            row.Cell(10).Value = Utility.NulltoStr(dr[col_KaiyakuContact_05]);
+            row.Cell(11).Value = Utility.NulltoStr(dr[col_KaiyakuContact_06]);
+            row.Cell(12).Value = Utility.NulltoStr(dr[col_KaiyakuContact_07]);
+            row.Cell(13).Value = Utility.NulltoStr(dr[col_KaiyakuContact_08]);
+
+            row.Cell(14).Value = Utility.NulltoStr(dr[col_Kaiyaku_01]);
+            row.Cell(15).Value = Utility.NulltoStr(dr[col_Kaiyaku_02]);
+            row.Cell(16).Value = Utility.NulltoStr(dr[col_Kaiyaku_03]);
+            row.Cell(17).Value = Utility.NulltoStr(dr[col_Kaiyaku_04]);
+
+            row.Cell(18).Value = Utility.NulltoStr(dr[col_RoomCheck_01]);
+            //row.Cell(19).Value = Utility.NulltoStr(dr[col_RoomCheck_02]);
+            row.Cell(20).Value = Utility.NulltoStr(dr[col_RoomCheck_03]);
+            row.Cell(21).Value = Utility.NulltoStr(dr[col_RoomCheck_04]);
+            row.Cell(22).Value = Utility.NulltoStr(dr[col_RoomCheck_05]);
+
+            row.Cell(23).Value = Utility.NulltoStr(dr[col_Shorui_01]);
+            row.Cell(24).Value = Utility.NulltoStr(dr[col_Shorui_02]);
+            row.Cell(25).Value = Utility.NulltoStr(dr[col_Shorui_03]);
+            row.Cell(26).Value = Utility.NulltoStr(dr[col_Shorui_04]);
+
+            row.Cell(27).Value = Utility.NulltoStr(dr[col_Tetsu_01]);
+            row.Cell(28).Value = Utility.NulltoStr(dr[col_Tetsu_02]);
+            //row.Cell(29).Value = Utility.NulltoStr(dr[col_Tetsu_03]);
+            row.Cell(30).Value = Utility.NulltoStr(dr[col_Tetsu_04]);
+            row.Cell(31).Value = Utility.NulltoStr(dr[col_Tetsu_05]);
+
+            row.Cell(32).Value = Utility.NulltoStr(dr[col_Hacchu_01]);
+            //row.Cell(33).Value = Utility.NulltoStr(dr[col_Hacchu_02]);
+            row.Cell(34).Value = Utility.NulltoStr(dr[col_Hacchu_03]);
+
+            row.Cell(35).Value = Utility.NulltoStr(dr[col_Kouji_01]);
+            row.Cell(36).Value = Utility.NulltoStr(dr[col_Kouji_02]);
+            row.Cell(37).Value = Utility.NulltoStr(dr[col_Kouji_03]);
+            row.Cell(38).Value = Utility.NulltoStr(dr[col_Kouji_04]);
+            row.Cell(39).Value = Utility.NulltoStr(dr[col_Kouji_05]);
+            //row.Cell(40).Value = Utility.NulltoStr(dr[col_Kouji_06]);
+            //row.Cell(41).Value = Utility.NulltoStr(dr[col_Kouji_07]);
+
+            row.Cell(42).Value = Utility.NulltoStr(dr[col_Kanryo_01]);
+            row.Cell(43).Value = Utility.NulltoStr(dr[col_Kanryo_02]);
+            row.Cell(44).Value = Utility.NulltoStr(dr[col_Kanryo_03]);
+            row.Cell(45).Value = Utility.NulltoStr(dr[col_Kanryo_04]);
+
+            row.Cell(46).Value = Utility.NulltoStr(dr[col_Bikou_01]);
+
+            row.Cell(47).Value = Utility.NulltoStr(dr[col_SkyOne_01]);
+            row.Cell(48).Value = Utility.NulltoStr(dr[col_SkyOne_02]);
+        }
 
 
         private bool XlsUpdate(string sFile, int r)
@@ -2138,8 +3100,6 @@ namespace scXlsData
             if (radioButton1.Checked)
             {
                 // 新規登録
-                //dataGridView1.Enabled = false;
-                //dataGridView1.CurrentCell = null;
                 txtBuCode.Enabled = true;
                 button2.Enabled = true;
                 txtBuCode.Focus();
@@ -2224,67 +3184,54 @@ namespace scXlsData
             dataGridView1.CurrentCell = null;
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void txtKaiyakuContact01_DoubleClick(object sender, EventArgs e)
         {
-            int sr = 0;
+            TextBox box = (TextBox)sender;
 
-            if (dataGridView1.CurrentCell == null)
+            //if (txtKaiyakuContact01.Text.Trim() == string.Empty)
+            //{
+            //    return;
+            //}
+
+            //DialogResult dialogResult = colorDialog1.ShowDialog();
+
+            //if (dialogResult == DialogResult.OK)
+            //{
+            //    txtKaiyakuContact01.ForeColor = colorDialog1.Color;
+            //    txtKaiyakuContact01.SelectionLength = 0;
+            //}
+
+            if (box.Text.Trim() == string.Empty)
             {
-                sr = 0;
-            }
-            else
-            {
-                DataGridViewCell cell = dataGridView1.CurrentCell;
-                sr = cell.RowIndex + 1;
+                return;
             }
 
-            int r = searchBuName(dataGridView1, txtsBuName.Text, sr);
-            if (r == -1)
+            DialogResult dialogResult = colorDialog1.ShowDialog();
+
+            if (dialogResult == DialogResult.OK)
             {
-                MessageBox.Show("該当する物件はありませんでした", "検索結果", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                dataGridView1.CurrentCell = null;
-            }
-            else
-            {
-                dataGridView1.CurrentCell = dataGridView1[1, r];
+                box.ForeColor = colorDialog1.Color;
+                box.SelectionLength = 0;
             }
         }
 
-        ///--------------------------------------------------------------
-        /// <summary>
-        ///     データグリッドビュー物件名検索 </summary>
-        /// <param name="dg">
-        ///     データグリッドビューオブジェクト</param>
-        /// <param name="sBuName">
-        ///     検索物件名</param>
-        /// <param name="r">
-        ///     開始行Index</param>
-        /// <returns>
-        ///     検索行Index</returns>
-        ///--------------------------------------------------------------
-        private int searchBuName(DataGridView dg, string sBuName, int r)
+        private void cmbKanri_SelectedValueChanged(object sender, EventArgs e)
         {
-            for (int i = r; i < dg.RowCount; i++)
+            if (cmbKanri.Text == TAKAN)
             {
-                if (Utility.NulltoStr(dg[colBuName, i].Value).Contains(sBuName))
-                {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        private void txtsBuName_TextChanged(object sender, EventArgs e)
-        {
-            if (txtsBuName.Text == string.Empty)
-            {
-                button5.Enabled = false;
+                cmbKanri.BackColor = Color.Red;
+                cmbKanri.ForeColor = Color.White;
             }
             else
             {
-                button5.Enabled = true;
+                cmbKanri.BackColor = SystemColors.Window;
+                cmbKanri.ForeColor = SystemColors.WindowText;
             }
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            DataGridViewAutoFilterTextBoxColumn.RemoveFilter(dataGridView1);
         }
     }
 }

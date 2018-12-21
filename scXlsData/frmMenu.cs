@@ -82,6 +82,11 @@ namespace scXlsData
         {
             // 環境設定読み込み
             loadConfig();
+
+            // バージョン表示
+            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+            var ver = assemblyName.Version;
+            this.Text = "メインメニュー   Ver." + ver;
         }
 
         private void button3_Click(object sender, EventArgs e)
