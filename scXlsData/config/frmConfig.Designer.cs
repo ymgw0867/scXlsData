@@ -92,9 +92,9 @@
             this.label6.Font = new System.Drawing.Font("MS UI Gothic", 9.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.label6.Location = new System.Drawing.Point(20, 79);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(186, 13);
+            this.label6.Size = new System.Drawing.Size(184, 13);
             this.label6.TabIndex = 11;
-            this.label6.Text = "エクセルファイル読み込みパスワード";
+            this.label6.Text = "エクセルファイル書き込みパスワード";
             // 
             // txtPassword
             // 

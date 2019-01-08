@@ -191,13 +191,8 @@ namespace scXlsData
                     pictureBox1.Visible = false;
                     lblMsg.Text = "";
 
-                    //dataUpdate(dataGridView1, tFile, xlsPass, string.Empty);
-
-                    //// データグリッドビュー変更追加行で黒以外の文字色セルを取得
-                    //getGridFontColor(dataGridView1);
-
                     // シートのセルにデータを書き込む
-                    excelUpdateFromDataTable(dTbl, tFile, xlsPass, string.Empty, colorArrays);
+                    excelUpdateFromDataTable(dTbl, tFile, string.Empty, xlsPass, colorArrays);
                 }
 
                 // 後片付け
@@ -384,7 +379,7 @@ namespace scXlsData
 
             try
             {
-                if (rPw != string.Empty)
+                if (wPw != string.Empty)
                 {
                     lblMsg.Text = sPath + " のパスワードを解除しています...";
                 }
@@ -396,12 +391,12 @@ namespace scXlsData
                 System.Threading.Thread.Sleep(100);
                 Application.DoEvents();
 
-                // Excelファイルを開く（ファイルパスワード付き）
+                // Excelファイルを開く
                 oXlsBook = (Excel.Workbook)(oXls.Workbooks.Open(sPath, Type.Missing, Type.Missing, Type.Missing,
-                    rPw, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+                    Type.Missing, wPw, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                     Type.Missing, Type.Missing, Type.Missing, Type.Missing));
 
-                if (rPw != string.Empty)
+                if (wPw != string.Empty)
                 {
                     lblMsg.Text = sPath + " のパスワードが解除されました...";
                 }
@@ -414,8 +409,8 @@ namespace scXlsData
                 Application.DoEvents();
 
                 oXls.DisplayAlerts = false;
-
-                if (wPw != string.Empty)
+                
+                if (rPw != string.Empty)
                 {
                     lblMsg.Text = sPath + " をパスワード付きで保存しています...";
                 }
@@ -427,8 +422,8 @@ namespace scXlsData
                 System.Threading.Thread.Sleep(100);
                 Application.DoEvents();
 
-                // Excelファイル書き込み（ファイルパスワード解除）
-                oXlsBook.SaveAs(sPath, Type.Missing, wPw, Type.Missing, Type.Missing, Type.Missing,
+                // Excelファイル書き込み
+                oXlsBook.SaveAs(sPath, Type.Missing, Type.Missing, rPw, Type.Missing, Type.Missing,
                                 Excel.XlSaveAsAccessMode.xlNoChange, Type.Missing, Type.Missing, Type.Missing,
                                 Type.Missing, Type.Missing);
 
@@ -714,7 +709,7 @@ namespace scXlsData
 
                     using (var bk = new XLWorkbook(sFile, XLEventTracking.Disabled))
                     {
-                        // 対象エクセルファイルのパスワード付きで書き込み
+                        // 対象エクセルファイルをパスワードなしで開いてパスワード付きで書き込む
                         if (impXlsSheet(sFile, wPass, rPass))
                         {
                             // ロックファイルを削除する
@@ -760,7 +755,7 @@ namespace scXlsData
                                 }
                                 else
                                 {
-                                    lblMsg.Text = msg + Utility.NulltoStr(t.Cell(1).Value) + ":" + Utility.NulltoStr(t.Cell(2).Value);
+                                    lblMsg.Text = msg + Utility.NulltoStr(t.Cell(2).Value) + ":" + Utility.NulltoStr(t.Cell(3).Value) + " " + t.RowNumber();
                                     System.Threading.Thread.Sleep(10);
                                     Application.DoEvents();
 
@@ -3173,7 +3168,9 @@ namespace scXlsData
 
             // Excelファイルを開く
             tFile = xlsFname;
-            gridViewShowData(dataGridView1, tFile, xlsPass, string.Empty);
+
+            // 書き込みパスワードを解除：2019/01/08
+            gridViewShowData(dataGridView1, tFile, string.Empty, xlsPass);
 
             // 画面初期化
             dispInitial();
